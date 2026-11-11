@@ -29,6 +29,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [015](#adr-015-email-delivery) | Email delivery | Accepted |
 | [016](#adr-016-encrypted-backups-in-a-private-repository) | Encrypted backups in a private repository | Accepted |
 | [017](#adr-017-git-history-policy-and-authorship) | Git history policy and authorship | Accepted |
+| [018](#adr-018-caching-model-cache-components) | Caching model: Cache Components | Proposed (verify on Netlify in M2) |
 
 ---
 
@@ -468,3 +469,28 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 - *Rewriting anywhere:* risks losing merged work.
 
 **Consequences.** Clean history, and an auditable explanation whenever a feature branch was rewritten.
+
+---
+
+## ADR-018: Caching model: Cache Components
+
+- **Date:** 2026-11-11
+- **Status:** Proposed. Becomes Accepted once on-demand revalidation is verified on a Netlify deploy at the start of M2.
+
+**Context.**
+- Next.js 16.4's `create-next-app` enables **Cache Components** (`cacheComponents: true`, `partialPrefetching: true`) by default.
+- The bundled Next.js docs describe this as the recommended model. The older model ("static pages + `revalidatePath`") is slated for removal in the next major version.
+- Public pages must show admin changes within seconds (SPEC §1).
+- Netlify documents on-demand revalidation for its Next.js adapter, but in November 2026 we found no explicit confirmation that its runtime fully supports `use cache` / `cacheTag` / `updateTag`.
+
+**Decision.**
+- Keep Cache Components enabled.
+- Public data functions use `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`.
+- Admin Server Actions call `updateTag('<module>')`, so the owner sees their own change immediately ("read your own writes").
+- **Verification gate at the start of M2:** the first database-backed public page is deployed to a Netlify preview, and we check that an admin-side change appears within seconds.
+
+**Alternatives considered.** *Disable Cache Components and use the previous model* (`revalidatePath` + time-based ISR): explicitly supported by Netlify today, but on its way out in Next.js. This is the fallback if the verification gate fails.
+
+**Consequences.**
+- We follow the documented, future-proof Next.js model.
+- If Netlify fails the gate, switching costs about a day: data functions and action helpers change, components don't. The outcome is recorded by updating this ADR's status, or by a superseding ADR.
