@@ -1,5 +1,30 @@
-# OS / editor
+# dependencies
+/node_modules
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# next.js / build
+/.next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
+
+# supabase local
+supabase/.branches
+supabase/.temp
+
+# netlify
+.netlify
+
+# misc
 .DS_Store
+*.pem
+npm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 

@@ -5,6 +5,11 @@ Sniff Pet Kuaför is the website, admin panel and (later) appointment-request sy
 - **Requirements:** [`docs/SPEC.md`](docs/SPEC.md), the source of truth. If a requirement changes, update the spec first.
 - **Plan and milestones:** [`docs/PLAN.md`](docs/PLAN.md).
 - **Decisions:** [`docs/decisions.md`](docs/decisions.md) (ADRs; append, never delete).
+- **Next.js 16.4 docs** ship in `node_modules/next/dist/docs/`. Read the relevant guide before writing Next code; APIs differ from older versions (see `AGENTS.md`).
+- **Caching (ADR-018):** Cache Components are on.
+  - Public data functions use `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`; admin actions call `updateTag('<module>')`.
+  - Runtime APIs (`cookies()`, `headers()`) go inside `<Suspense>`.
+  - Dynamic route handlers call `await connection()`.
 
 ## Non-negotiable rules
 

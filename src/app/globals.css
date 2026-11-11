@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* Brand tokens (SPEC §6, ADR-014). Tailwind's default palette is removed so only these colours exist. */
+@theme {
+  --color-*: initial;
+  --color-navy: #07152b;
+  --color-cream: #f5e1ce;
+  --color-white: #ffffff;
+  --color-beige: #e9d8c6;
+  --color-neutral-bg: #faf6f1;
+  --color-muted-text: #66625e; /* never on beige */
+  --color-caramel: #c98a4b; /* accent fills only; text on it is navy */
+  --color-danger: #a63d2a; /* errors and destructive actions only */
+}
+
+/* Fonts come from next/font in layout.tsx (self-hosted, latin-ext for Turkish characters). */
+@theme inline {
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-nunito-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-neutral-bg font-sans text-navy antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-navy);
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

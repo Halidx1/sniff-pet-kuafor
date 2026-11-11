@@ -61,6 +61,7 @@ Hosting and free-tier facts were checked in November 2026 (sources at the end). 
 | 014 | **Palette:** `muted-text` → `#66625E`, a caramel accent, a brick red for errors | Readability standard (WCAG AA) plus your request for a modern third colour (§1.5) |
 | 015 | **Custom SMTP for Supabase Auth emails:** a Gmail app password until the domain exists, then Resend | The built-in sender sends 2 emails/hour and, on new free projects, can't be customised, so emails would arrive in English |
 | 016 | **Backups:** a daily `pg_dump` encrypted with `age`, committed to a private repo by a workflow that lives in the public repo | No public backup files; the workflow stays visible in your portfolio |
+| 018 | **Caching model: Next.js Cache Components** (`'use cache'` + `cacheTag`; admin actions call `updateTag`). *Proposed* until verified on Netlify at the start of M2. | The default and documented model in Next.js 16.4. Fallback: the previous `revalidatePath` model (added during M0) |
 
 ---
 
@@ -100,7 +101,7 @@ flowchart LR
   FN -->|"admin session (aal2) = is_admin() RLS"| DB
   FN -->|"secret key: booking RPC only (Could)"| DB
   FN -->|"verify token"| TT
-  FN -.->|"revalidatePath after every admin change"| CDN
+  FN -.->|"updateTag after every admin change"| CDN
   FN -.->|"if configured"| EM
   GA -->|"GET /api/health every 2-3 days"| FN
   GA -->|"read-only pg_dump, then age-encrypt"| BR
@@ -346,7 +347,7 @@ These ship with the booking module's own migrations, not in the MVP.
 | *(every page)* | Closure banner, e.g. "12 Aralık Perşembe günü kapalıyız. …", shown while a closure with a public note is upcoming or active | business |
 | `/sitemap.xml`, `/robots.txt` | `/admin` disallowed; previews get `noindex` | — |
 
-After any admin change, `revalidatePublicSite()` calls `revalidatePath('/', 'layout')`. Regenerating all ~9 pages is cheaper and simpler than tracking which page depends on which data.
+Public data functions are cached with `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`, and each admin action calls `updateTag('<module>')` for the data it changed (ADR-018, added during M0). If Netlify fails the M2 verification gate, we fall back to `revalidatePath('/', 'layout')`.
 
 ### Admin (`src/app/admin/`: everything `noindex`, a strict nonce-based CSP, Turkish ASCII slugs)
 
@@ -495,7 +496,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 
 - **Build:**
   - Next 16 + TS strict + Tailwind v4 tokens (§1.5) + `next/font` (Nunito Sans / DM Sans, `latin-ext`)
-  - ESLint (+ boundaries), Prettier, Vitest, Playwright + axe smoke test
+  - ESLint, Prettier, Vitest, Playwright + axe smoke test (module-boundary lint rules arrive in M1 with the first modules)
   - Supabase CLI as a dev dependency; `supabase init`; `npm run db:start / db:stop / db:reset / db:types`
   - Interim logo extraction script
   - Turkish "Çok Yakında" page in the style of the coming-soon artwork; `<html lang="tr">`
@@ -514,6 +515,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 ### M1 — Data layer (Must)
 
 - **Build:**
+  - First domain modules + `eslint-plugin-boundaries` rules
   - Migrations per module (identity, business, content, media, catalog), plus RLS, grants, audit log, bucket and policies, `pg_cron` purge
   - Seed:
     - texts and facts from the spec
