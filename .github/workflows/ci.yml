@@ -45,7 +45,10 @@ jobs:
       - run: npm run build
       - name: No secret keys in client bundles
         run: "! grep -rq sb_secret_ .next/static"
-      - run: npx playwright install --with-deps chromium
+      - name: Install test browser
+        # The runner image already has Chromium's system libraries; skipping apt avoids slow,
+        # flaky Ubuntu mirrors (the only extras it would add are CJK/emoji fonts we don't use).
+        run: npx playwright install chromium
       - run: npx playwright test
       - name: Upload Playwright report
         if: failure()
