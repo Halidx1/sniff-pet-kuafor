@@ -30,7 +30,8 @@ select throws_ok(
 
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 set local role anon;
-select is((select array_agg(alt_text) from public.media), array['Taranmış bir kedi'], 'anon sees only published media');
+-- Assertions use this test's own rows, so they hold whether or not seed:media has run.
+select is((select array_agg(alt_text) from public.media where id::text like 'd0000000-%'), array['Taranmış bir kedi'], 'anon sees only published media');
 select is((select count(*)::int from storage.objects where bucket_id = 'media'), 0, 'anon cannot list files in the bucket');
 select throws_ok($$ insert into storage.objects (bucket_id, name) values ('media', 'gallery/x/480.webp') $$,
   '42501', null, 'anon cannot upload');
@@ -46,8 +47,8 @@ reset role;
 
 select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated","aal":"aal2"}', true);
 set local role authenticated;
-select is((select count(*)::int from storage.objects where bucket_id = 'media'), 1, 'admin with 2FA sees files');
-select is((select count(*)::int from public.media), 2, 'admin with 2FA sees unpublished media too');
+select is((select count(*)::int from storage.objects where bucket_id = 'media' and name like 'gallery/d0000000-%'), 1, 'admin with 2FA sees files');
+select is((select count(*)::int from public.media where id::text like 'd0000000-%'), 2, 'admin with 2FA sees unpublished media too');
 reset role;
 
 select * from finish();
