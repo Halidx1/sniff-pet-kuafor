@@ -1,5 +1,9 @@
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+
+// Local Supabase keys for integration tests (CI sets them as real env vars).
+if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 export default defineConfig({
   resolve: {
@@ -7,6 +11,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.{ts,tsx}"],
+    // Integration tests talk to the local Supabase stack (`npm run db:start`).
+    include: ["src/**/*.test.{ts,tsx}", "tests/integration/**/*.test.ts"],
   },
 });

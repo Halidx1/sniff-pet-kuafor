@@ -1,0 +1,40 @@
+name: Migrate dev database
+
+# After a merge to main, apply new migrations (and seed) to the cloud dev
+# project that Netlify previews and the main branch deploy read from.
+# The prod project gets its own job in M4, gated by the `production` environment.
+on:
+  push:
+    branches: [main]
+    paths: ["supabase/migrations/**", "supabase/seed/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-dev
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Apply migrations to the dev project
+    # Skipped until the repository variable is set (see README "Deployment").
+    if: vars.SUPABASE_DEV_PROJECT_REF != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROJECT_REF: ${{ vars.SUPABASE_DEV_PROJECT_REF }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DEV_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Show pending migrations
+        run: npx supabase db push --remote="$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --include-seed --dry-run
+      - name: Apply migrations and seed
+        run: npx supabase db push --remote="$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --include-seed

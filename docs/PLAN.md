@@ -80,7 +80,7 @@ flowchart LR
     PX["proxy.ts (only /admin): refresh session, set CSP nonce"]
     FN["Server functions: page render on cache miss, Server Actions, Route Handlers"]
   end
-  subgraph S["Supabase Free: Frankfurt"]
+  subgraph S["Supabase Free: EU (Ireland)"]
     DB[("Postgres: RLS, RPCs, triggers, audit log, pg_cron")]
     AU["Auth: email + password + TOTP 2FA, sign-up disabled"]
     ST["Storage: bucket 'media'"]
@@ -122,7 +122,7 @@ flowchart LR
 | Local | `npm run dev` | Supabase in Docker (`npm run db:start`) | Seed + test data, reset with `npm run db:reset` |
 | CI | Production build on the runner | Supabase in Docker on the runner | Fresh every run |
 | PR previews + `main` branch deploy | Netlify, no credits used | **dev** Supabase project (cloud) | Demo data only |
-| Production | Netlify, `production` branch | **prod** Supabase project (Frankfurt) | Real data |
+| Production | Netlify, `production` branch | **prod** Supabase project (EU region) | Real data |
 
 Migrations are written locally and tested with `db:reset` plus the tests. Once merged, a workflow applies them to the dev project (push to `main`) or the prod project (push to `production`, environment-protected). Every migration is additive (expand/contract), so a deploy and its migration may land in either order.
 
@@ -190,7 +190,7 @@ These live in `src/shared/supabase/`. Java analogy: three DataSources with diffe
 |---|---|---|---|
 | `publicClient()` | Publishable key, no cookies = `anon` | All public pages | RLS returns published rows only. Reading no cookies keeps pages static and cacheable. |
 | `adminClient()` | Publishable key + the admin's HttpOnly session cookie | Admin pages and actions | RLS requires `is_admin()`, meaning listed in `private.admins` **and** a JWT with `aal = aal2` (2FA done) |
-| `serviceClient()` | Secret key, inside an `import 'server-only'` module | Booking RPC and busy-slot read (Could), seed scripts | Never bundled for the browser; a CI step also greps the client build for `sb_secret_` |
+| `serviceClient()` | Secret key, inside an `import 'server-only'` module | Booking RPC and busy-slot read (Could). Added when first needed (M5); scripts and tests create their own client, because `server-only` can't load outside Next.js | Never bundled for the browser; a CI step also greps the client build for `sb_secret_` |
 
 ### 1.5 Brand palette (Tailwind v4 `@theme`; Tailwind's default colours are removed, so only these exist)
 
@@ -253,13 +253,13 @@ The GraphQL endpoint is **disabled** because it's unused.
 |---|---|---|---|
 | identity | `private.admins` | `user_id PK → auth.users`, `display_name` | Rows added by SQL only (owner + developer) |
 | business | `business_profile` (1 row) | `business_name`, `slogan`, `address`, `maps_url`, `map_embed_url?`, `instagram_url`, `phone_e164?`, `whatsapp_e164?`, `email?` | Single row (`id boolean PK check (id)`). Phone matches `^\+90\d{10}$`. Seeded from SPEC §5; phone, WhatsApp and email start empty. |
-| business | `opening_hours` | `weekday 1–7` (ISO, 1 = Pazartesi), `opens_at`, `closes_at` | `closes_at > opens_at`. No overlapping intervals per day (exclusion on a custom `timerange`). Several rows per day = breaks. Starts **empty**; shown publicly and in JSON-LD only once entered. |
+| business | `opening_hours` | `weekday 1–7` (ISO, 1 = Pazartesi), `opens_at`, `closes_at` | `closes_at > opens_at`. No overlapping intervals per day (exclusion constraint over `weekday` and a `tsrange` built on a fixed dummy date). Several rows per day = breaks. Starts **empty**; shown publicly and in JSON-LD only once entered. |
 | business | `closures` | `starts_at timestamptz`, `ends_at timestamptz`, `public_note?`, `internal_note?` | `ends_at > starts_at` (half-open range). Covers **whole days** (the UI stores 00:00–24:00 Istanbul time) **or part of a day** (e.g. "bugün 14:00'ten itibaren"). `public_note` is shown in a site-wide banner while the closure is upcoming (within 7 days) or active. |
 | content | `site_texts` (1 row) | `hero_title`, `hero_subtitle`, `hero_text`, `welcome_text`, `about_markdown` | Seeded with the SPEC §8 texts |
 | content | `faq_items` | `question`, `answer` + content columns | Seeded drafts with placeholder answers |
-| media | `media` | `kind`, `storage_prefix`, `widths int[]`, `width`, `height`, `alt_text`, `caption?`, `category pet_type?`, `credit?` + content columns | `alt_text` can't be blank. Demo stock images may be shown as decoration but stay flagged. |
+| media | `media` | `kind`, `storage_prefix`, `file_ext` (`webp`/`jpg`), `widths int[]`, `width`, `height`, `alt_text`, `caption?`, `category pet_type?`, `credit?` + content columns | `alt_text` can't be blank. Demo stock images may be shown as decoration but stay flagged. |
 | catalog | `services` | `name`, `description`, `category`, `pet_scope`, `image_id → media?` + content columns | 6 seeded drafts (`is_demo`, unpublished) |
-| catalog | `service_prices` | `service_id → services (cascade)`, `tier`, `price_type`, `amount numeric(10,2)?`, `duration_min?`, `is_demo` | PK `(service_id, tier)`. Amount required unless `contact`; amount ≥ 0; duration > 0. No row = tier not offered. Seeded rows are "DEMO / OWNER APPROVAL REQUIRED" and the owner confirms them per service ("Fiyat ve süreleri onaylıyorum"). |
+| catalog | `service_prices` | `service_id → services (cascade)`, `tier`, `price_type`, `amount numeric(10,2)?`, `duration_min?`, `is_demo` | `id` PK like every table, plus unique `(service_id, tier)`. Amount required unless `contact` (and absent for `contact`); amount ≥ 0; duration > 0. No row = tier not offered. Seeded rows are "DEMO / OWNER APPROVAL REQUIRED" and the owner confirms them per service ("Fiyat ve süreleri onaylıyorum"). |
 | catalog | `addons` | `name`, `description`, `pet_scope`, `price_type`, `amount?`, `duration_min default 0` + content columns | One price per add-on (A6) |
 | (all) | `private.audit_log` | `table_name`, `row_id`, `action`, `actor`, `at`, `old jsonb`, `new jsonb` | Written by trigger, read via the dashboard |
 
@@ -295,7 +295,8 @@ These ship with the booking module's own migrations, not in the MVP.
 
 | Function | Caller | Purpose |
 |---|---|---|
-| `is_admin()` | used inside policies | `auth.uid()` is in `private.admins` **and** `auth.jwt()->>'aal' = 'aal2'` |
+| `private.is_admin()` | used inside policies (EXECUTE for `authenticated` only) | `auth.uid()` is in `private.admins` **and** `auth.jwt()->>'aal' = 'aal2'` |
+| `public.health_check()` | anon, via `/api/health` | Returns `true`: one tiny query that touches no domain table |
 | `set_updated_meta()`, `clear_demo_on_publish()`, `write_audit()` | triggers | Common columns, publishing, audit trail |
 | `purge_audit_log()` | `pg_cron`, weekly | Retention |
 | *(Could)* `create_booking_request(jsonb)` | service_role only | One transaction with the full rule re-check and lane insert (§4) |
@@ -306,10 +307,12 @@ These ship with the booking module's own migrations, not in the MVP.
 
 | Table | anon (public site) | authenticated, not admin | admin (`is_admin()`, so 2FA done) |
 |---|---|---|---|
-| `services`, `addons`, `faq_items`, `media` | SELECT where `is_published` | same as anon | all |
-| `service_prices` | SELECT where `NOT is_demo` and the parent service is published | same as anon | all |
-| `business_profile`, `site_texts`, `opening_hours`, `closures` | SELECT | same as anon | all |
+| `services`, `addons`, `faq_items`, `media` | SELECT where `is_published` | none | all |
+| `service_prices` | SELECT where `NOT is_demo` and the parent service is published | none | all |
+| `business_profile`, `site_texts`, `opening_hours`, `closures` | SELECT (`closures` without `internal_note`, by column grant) | none | all (profile and texts: SELECT/UPDATE only, they are single rows) |
 | `private.*` | not reachable through the API | not reachable | via functions or the dashboard only |
+
+*Changed in M1:* "authenticated, not admin" gets **nothing** instead of the anon view. The public site only ever uses the anon role, and the only signed-in users are admins, so a password-only (aal1) session simply sees no rows. This is simpler and stricter. Table grants are explicit as well: anon has SELECT only, so even a missing policy could never let a visitor write.
 | *(Could)* `booking_settings` | SELECT on every column except `notification_email` | same as anon | all |
 | *(Could)* `appointments` | **none** | none | all; website inserts only through the RPC |
 
@@ -467,7 +470,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 
 **Fallback:** Netlify Personal ($9/month). No Netlify-specific APIs are used, so moving hosts stays possible.
 
-**Region:** Supabase in Frankfurt. I'll check whether Free lets Netlify functions run in Frankfurt (**verify**). If not, uncached admin requests pay ~100 ms more.
+**Region:** Supabase in the EU: the dashboard only offers a broad "Europe" choice, which gave the dev project eu-west-1 (Ireland). *Verified in M0:* on Free, Netlify functions always run in Ohio (us-east-2); choosing a region needs an upgrade. Visitors are unaffected (public pages come from the CDN); uncached admin requests pay ~100 ms per database round trip, kept low by running independent queries in parallel. Supabase stays in the EU for KVKK (ADR-003).
 
 **Until you buy the domain:** production runs at `<site>.netlify.app`. Turnstile's hostname is set to it, and auth emails use the interim Gmail SMTP (ADR-015).
 
@@ -504,7 +507,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
   - CI, CodeQL and Dependabot (npm + actions), with actions pinned to commit SHAs and read-only `permissions`
   - Netlify config: production branch `production`; previews `noindex`
   - `CLAUDE.md`, `PLAN.md`, `decisions.md`, README skeleton
-- **You do:** install Docker Desktop; create the dev Supabase project (Frankfurt); create the Netlify site from the repo and paste env vars; turn on branch protection (exact clicks provided). I'll create the GitHub repo with `gh` if it's signed in, otherwise you do.
+- **You do:** install Docker Desktop; create the dev Supabase project (EU region); create the Netlify site from the repo and paste env vars; turn on branch protection (exact clicks provided). I'll create the GitHub repo with `gh` if it's signed in, otherwise you do.
 - **Test:**
   - [ ] PR CI is green
   - [ ] The deploy preview shows "ş ğ ü ö ç İ ı" in the brand fonts
@@ -515,7 +518,6 @@ The owner can delete or shorten a closure; those times become bookable again at 
 ### M1 — Data layer (Must)
 
 - **Build:**
-  - First domain modules + `eslint-plugin-boundaries` rules
   - Migrations per module (identity, business, content, media, catalog), plus RLS, grants, audit log, bucket and policies, `pg_cron` purge
   - Seed:
     - texts and facts from the spec
@@ -527,16 +529,19 @@ The owner can delete or shorten a closure; those times become bookable again at 
   - Generated types; health check reads the DB
   - `migrate.yml` (applies to the dev project on push to `main`); `keep-alive.yml`
   - pgTAP and integration tests
-- **You do:** run `npx supabase login` once; add `SUPABASE_ACCESS_TOKEN`, the dev DB password and the `HEALTHCHECK_URL` secrets.
+- **You do:** create the cloud dev project and an access token; add the GitHub secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DEV_DB_PASSWORD` and the variable `SUPABASE_DEV_PROJECT_REF`; add the dev project's URL and publishable key to Netlify (previews and branch deploys); run `npm run seed:media` once against the dev project. (The keep-alive URL is in the workflow, so no secret is needed.)
+- **Moved to M2:** `eslint-plugin-boundaries` rules, because M1 added no TypeScript module code for them to check.
 - **Test:**
-  - [ ] `npm run db:reset` then `npm test` is green locally
-  - [ ] Studio shows 6 demo drafts
-  - [ ] An anon REST `curl` returns `[]` for services and an error for `private.admins`
+  - [ ] `npm run db:reset`, `npm run seed:media`, `npm run test:db` and `npm test` are green locally
+  - [ ] Studio (http://127.0.0.1:54323) shows 6 demo services, all unpublished
+  - [ ] An anon REST `curl` returns `[]` for services and an error for `admins`
+  - [ ] After merging, the "Migrate dev database" workflow is green and the dev project has the tables
   - [ ] Running keep-alive manually is green
 
 ### M2 — Public site (Must)
 
 - **Build:**
+  - First domain modules + `eslint-plugin-boundaries` rules (moved from M1)
   - UI kit (Button, Card, SectionHeading, Badge, Field, Dialog)
   - Layout: sticky header, hamburger `<dialog>`, always-visible mobile "Randevu Al" bar → `/randevu-al`, WhatsApp button only when a number is set, footer
   - All public pages with the exact fallback texts from §9/§10
@@ -647,7 +652,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 ### Assumptions (tell me if any is wrong)
 
 - **A1** Tool versions. Nothing to decide here; this is just for the record. These are the newest stable versions of the tools in the spec's tech stack: Node 24 runs the code, Next.js 16 and React 19 build the pages, Tailwind 4 does the styling, Zod 4 does validation. `package-lock.json` freezes the exact versions so every machine and CI get identical installs, much like a Maven `pom.xml` with fixed versions.
-- **A2** Netlify serves previews and production. If Free lacks per-context env vars (**verify** in M0), previews move to Vercel Hobby, which is allowed for non-commercial previews.
+- **A2** Netlify serves previews and production. *Verified in M0:* Free supports per-context environment variables, so previews stay on Netlify.
 - **A3** Owner and developer have identical admin rights. Both need 2FA. A lost phone is fixed by the developer removing the factor in the Supabase dashboard.
 - **A4** Lunch breaks are gaps between opening intervals. Closures can be whole days, date ranges or part of a day, and can be added in an emergency in two taps (§4.1). Existing bookings are never cancelled automatically; the owner confirms the bulk cancellation and notifies customers.
 - **A5** *(Could)* The buffer comes after each appointment and may run past closing; the service itself must end by closing.
@@ -739,7 +744,9 @@ SPEC §18 stays; the site uses placeholders until it's answered. New ones:
 **Branches and commits:**
 - One branch per feature: `feat/m2-public-pages`, `fix/…`, `chore/…`.
 - Conventional Commits, e.g. `feat(catalog): add tier price editor`.
-- I push branches and open PRs with `gh`, each with a test checklist; you merge in the GitHub UI with **"Squash and merge"**.
+- I push branches and open PRs with `gh`, each with a test checklist; you merge feature PRs in the GitHub UI with **"Squash and merge"**.
+- Release PRs (`main → production`) are merged with **"Create a merge commit"**, so `production` keeps `main`'s commits and later releases don't replay old changes (ADR-019).
+- Work is tracked with GitHub milestones (M1–M6), one issue per deliverable and a public project board; commits say `Refs #n` and the PR says `Closes #n` (ADR-019).
 
 **History rewriting (now allowed, per your answer):**
 - Only on **my own, unmerged feature branches**, e.g. tidying commits before review.

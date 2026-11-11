@@ -20,7 +20,7 @@ jobs:
   verify:
     name: Lint, types, unit, build, e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -28,14 +28,27 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Start local Supabase (migrations + seed)
+        # Only the services the tests use: Postgres, auth, REST, storage and the API gateway.
+        run: npx supabase start -x realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Export local Supabase URL and keys
+        run: npm run -s db:env >> "$GITHUB_ENV"
+      - name: Seed demo images
+        run: npm run seed:media
       - run: npm run lint
       - run: npm run format:check
+      - name: Generated database types match the migrations
+        run: npm run db:types && git diff --exit-code src/shared/supabase/database.types.ts
       - run: npm run typecheck
+      - run: npm run test:db
       - run: npm test
       - run: npm run build
       - name: No secret keys in client bundles
         run: "! grep -rq sb_secret_ .next/static"
-      - run: npx playwright install --with-deps chromium
+      - name: Install test browser
+        # The runner image already has Chromium's system libraries; skipping apt avoids slow,
+        # flaky Ubuntu mirrors (the only extras it would add are CJK/emoji fonts we don't use).
+        run: npx playwright install chromium
       - run: npx playwright test
       - name: Upload Playwright report
         if: failure()

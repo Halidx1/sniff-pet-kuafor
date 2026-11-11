@@ -30,6 +30,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [016](#adr-016-encrypted-backups-in-a-private-repository) | Encrypted backups in a private repository | Accepted |
 | [017](#adr-017-git-history-policy-and-authorship) | Git history policy and authorship | Accepted |
 | [018](#adr-018-caching-model-cache-components) | Caching model: Cache Components | Proposed (verify on Netlify in M2) |
+| [019](#adr-019-work-tracking-on-github-and-release-merges) | Work tracking on GitHub and release merges | Accepted |
 
 ---
 
@@ -119,6 +120,12 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
   - commercial-use wording in the current terms
   - per-deploy-context environment variables on Free (if missing, previews move to Vercel Hobby, allowed for non-commercial previews)
   - whether functions can run in Frankfurt
+
+**Verification results (2026-11-11, end of M0).**
+- Per-context environment variables: **available on Free** (scopes and deploy contexts can be chosen). Previews stay on Netlify.
+- Functions region: **fixed to Ohio (us-east-2) on Free**; choosing a region requires an upgrade. Supabase stays in the EU: visitors get pages from the CDN and are unaffected, while uncached admin requests pay ~100 ms per database round trip. Moving the database to Ohio was rejected because later booking data (Could) would then sit in the US instead of the EU, the weaker choice for KVKK.
+- Commercial-use wording: still to re-read before the first release (issue #43).
+- Supabase region: the new-project screen only offers a broad "Europe" choice, which placed the dev project in **eu-west-1 (Ireland)** instead of Frankfurt. Accepted: still the EU for KVKK, and Ireland is slightly closer to Netlify's Ohio functions.
 
 ---
 
@@ -494,3 +501,34 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 **Consequences.**
 - We follow the documented, future-proof Next.js model.
 - If Netlify fails the gate, switching costs about a day: data functions and action helpers change, components don't. The outcome is recorded by updating this ADR's status, or by a superseding ADR.
+
+---
+
+## ADR-019: Work tracking on GitHub and release merges
+
+- **Date:** 2026-11-11
+- **Status:** Accepted
+
+**Context.**
+- Until M0 the plan lived only in `docs/PLAN.md`. The developer asked to track milestones and issues on GitHub from M1 on, and to use GitHub Projects if worthwhile.
+- The developer merges in the GitHub UI and is learning git, so the number of merges per milestone matters.
+- ADR-017 says "Squash and merge" for every PR. For a release PR `main → production` that creates a new commit on `production` that `main` doesn't have; every later release would show old changes again and could conflict.
+
+**Decision.**
+- **Milestones:** one GitHub milestone per plan milestone (M1–M6, with "(Could)" on M5–M6).
+- **Issues:** one per deliverable, labelled by module (`module:*`) and concern (`database`, `ci`, `security`, `needs-owner`). The current milestone gets detailed issues; later milestones get coarse issues that are refined when the milestone starts. Open questions for the owner are one `needs-owner` checklist issue.
+- **Project board:** one public user project, "Sniff Pet Kuaför", with every issue; Status is Todo → In Progress → Done. GitHub's built-in workflows move items to Done when an issue closes or a PR merges.
+- **Branches and PRs:** one branch and PR per milestone (or per large feature), with one commit per issue saying `Refs #n`; the PR body says `Closes #n` for every finished issue.
+- **Merging:** feature PRs use **Squash and merge** (ADR-017). Release PRs `main → production` use **Create a merge commit**, so `production` always contains `main`'s exact commits.
+
+**Alternatives considered.**
+- *Checklists in `PLAN.md` only:* no links between code, discussion and progress; invisible on the repository page.
+- *One PR per issue:* cleaner review units, but about ten merges per milestone for a developer working in the GitHub UI, plus stacked-branch rebases.
+- *Squash for releases too:* `main` and `production` diverge after the first release.
+- *No project board:* milestones already show progress; the board was kept because it costs little, updates itself, and shows the roadmap at a glance for the portfolio.
+
+**Consequences.**
+- Progress, decisions and code are linked and visible on GitHub.
+- Claude keeps issue status and the board current as part of each milestone.
+- The branch-protection rule for `production` must allow merge commits.
+

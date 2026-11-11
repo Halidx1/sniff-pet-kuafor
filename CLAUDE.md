@@ -98,7 +98,8 @@ docs/                    SPEC · PLAN · decisions · YONETICI_REHBERI · IMAGE_
 ## Git (ADR-017)
 
 - **Branches and commits:** branches `feat/…`, `fix/…`, `chore/…`; Conventional Commits (`feat(catalog): …`).
-- **PRs:** Claude pushes and opens a PR with a test checklist; the developer merges with **Squash and merge**.
+- **PRs:** Claude pushes and opens a PR with a test checklist; the developer merges feature PRs with **Squash and merge** and release PRs (`main → production`) with **Create a merge commit** (ADR-019).
+- **Tracking (ADR-019):** GitHub milestones M1–M6, one issue per deliverable, public project board "Sniff Pet Kuaför". Commits reference issues (`Refs #n`); the PR closes them (`Closes #n`); move board items to In Progress when work starts. Questions for the owner live in the `needs-owner` issue.
 - **History rewriting:** only on Claude's own unmerged feature branches, with `--force-with-lease`, explained in a PR comment. Never on `main` or `production`.
 - **Authorship:** commits are authored by the configured git user. Every commit message ends with:
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` (kept at the developer's request).
@@ -110,3 +111,4 @@ docs/                    SPEC · PLAN · decisions · YONETICI_REHBERI · IMAGE_
 - Explain non-obvious choices in plain words, with Java or backend analogies, and avoid unexplained jargon.
 - Always give exact commands for manual steps. Uses git mainly through the GitHub UI.
 - At the end of each milestone, stop and report: what was built, manual steps (accounts, keys, dashboard settings) and how to test.
+- Also write `docs/milestones/M<n>.md` each milestone: the developer's to-do list and the checks, as Markdown checkboxes. This folder is git-ignored: local only, never committed.

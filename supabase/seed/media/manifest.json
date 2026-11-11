@@ -1,0 +1,112 @@
+[
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000001",
+    "file": "supabase/seed/media/hero-pomeranian-towel.jpg",
+    "kind": "hero",
+    "alt_text": "Başına pembe havlu sarılmış, tüyleri taranan bir Pomeranian köpek",
+    "category": "dog",
+    "credit": "Fotoğraf: Hayffield L / Unsplash",
+    "sort_order": 1,
+    "is_published": true
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000002",
+    "file": "supabase/seed/media/about-poodle-scissors.jpg",
+    "kind": "about",
+    "alt_text": "Tüyleri makasla şekillendirilen beyaz bir köpek",
+    "category": "dog",
+    "credit": "Fotoğraf: Buddy AN / Unsplash",
+    "sort_order": 1,
+    "is_published": false
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000003",
+    "file": "supabase/seed/media/gallery-cat-petted.jpg",
+    "kind": "gallery",
+    "alt_text": "Sevilirken gözlerini kapatan tekir bir kedi",
+    "category": "cat",
+    "credit": "Fotoğraf: Paul Hanaoka / Unsplash",
+    "sort_order": 1,
+    "is_published": false
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000004",
+    "file": "supabase/seed/media/gallery-dog-running.jpg",
+    "kind": "gallery",
+    "alt_text": "Çimenlerde koşan beyaz, kabarık tüylü bir köpek",
+    "category": "dog",
+    "credit": "Fotoğraf: Joe Caione / Unsplash",
+    "sort_order": 2,
+    "is_published": false
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000005",
+    "file": "supabase/seed/media/gallery-cat-persian-grooming.jpg",
+    "kind": "gallery",
+    "alt_text": "Bakım masasında tüyleri taranan bir İran kedisi",
+    "category": "cat",
+    "credit": "Fotoğraf: Reba Spike / Unsplash",
+    "sort_order": 3,
+    "is_published": false
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000006",
+    "file": "supabase/seed/media/gallery-dog-puppy.jpg",
+    "kind": "gallery",
+    "alt_text": "Başını yastığa dayamış kahverengi-beyaz bir yavru köpek",
+    "category": "dog",
+    "credit": "Fotoğraf: T.R Photography / Unsplash",
+    "sort_order": 4,
+    "is_published": false
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000007",
+    "file": "supabase/seed/media/gallery-cat-grey.jpg",
+    "kind": "gallery",
+    "alt_text": "Patisini yalayan gri bir kedi",
+    "category": "cat",
+    "credit": "Fotoğraf: Milada Vigerova / Unsplash",
+    "sort_order": 5,
+    "is_published": false
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000008",
+    "file": "supabase/seed/media/gallery-dog-bandana.jpg",
+    "kind": "gallery",
+    "alt_text": "Yeşil fular takmış, gülümseyen küçük bir köpek",
+    "category": "dog",
+    "credit": "Fotoğraf: Karsten Winegeart / Unsplash",
+    "sort_order": 6,
+    "is_published": false
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000009",
+    "file": "sources/images/brushing.jpg",
+    "kind": "instagram",
+    "alt_text": "Beyaz uzun tüylü bir köpeğin tüyleri tarakla taranıyor",
+    "category": "dog",
+    "credit": "Sniff Pet Kuaför Instagram",
+    "sort_order": 1,
+    "is_published": true
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000010",
+    "file": "sources/images/feeding.jpg",
+    "kind": "instagram",
+    "alt_text": "Yukarı bakan kahverengi kıvırcık tüylü bir köpek",
+    "category": "dog",
+    "credit": "Sniff Pet Kuaför Instagram",
+    "sort_order": 2,
+    "is_published": true
+  },
+  {
+    "id": "3ed1a000-0001-4000-8000-000000000011",
+    "file": "sources/images/nailing.jpg",
+    "kind": "instagram",
+    "alt_text": "Beyaz tüylü bir köpeğin tırnakları kesiliyor",
+    "category": "dog",
+    "credit": "Sniff Pet Kuaför Instagram",
+    "sort_order": 3,
+    "is_published": true
+  }
+]
