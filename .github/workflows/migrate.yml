@@ -6,7 +6,7 @@ name: Migrate dev database
 on:
   push:
     branches: [main]
-    paths: ["supabase/migrations/**", "supabase/seed/**"]
+    paths: ["supabase/migrations/**", "supabase/seed/**", ".github/workflows/migrate.yml"]
   workflow_dispatch:
 
 permissions:
@@ -37,4 +37,5 @@ jobs:
       - name: Show pending migrations
         run: npx supabase db push --remote="$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --include-seed --dry-run
       - name: Apply migrations and seed
-        run: npx supabase db push --remote="$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --include-seed
+        # --yes: CI can't answer the CLI's confirmation prompt; the dry run above shows what is applied.
+        run: npx supabase db push --remote="$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --include-seed --yes
