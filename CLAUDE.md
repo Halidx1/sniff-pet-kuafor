@@ -98,7 +98,8 @@ docs/                    SPEC · PLAN · decisions · YONETICI_REHBERI · IMAGE_
 ## Git (ADR-017)
 
 - **Branches and commits:** branches `feat/…`, `fix/…`, `chore/…`; Conventional Commits (`feat(catalog): …`).
-- **PRs:** Claude pushes and opens a PR with a test checklist; the developer merges with **Squash and merge**.
+- **PRs:** Claude pushes and opens a PR with a test checklist; the developer merges feature PRs with **Squash and merge** and release PRs (`main → production`) with **Create a merge commit** (ADR-019).
+- **Tracking (ADR-019):** GitHub milestones M1–M6, one issue per deliverable, public project board "Sniff Pet Kuaför". Commits reference issues (`Refs #n`); the PR closes them (`Closes #n`); move board items to In Progress when work starts. Questions for the owner live in the `needs-owner` issue.
 - **History rewriting:** only on Claude's own unmerged feature branches, with `--force-with-lease`, explained in a PR comment. Never on `main` or `production`.
 - **Authorship:** commits are authored by the configured git user. Every commit message ends with:
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` (kept at the developer's request).
