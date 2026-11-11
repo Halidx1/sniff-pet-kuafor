@@ -123,8 +123,9 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 
 **Verification results (2026-11-11, end of M0).**
 - Per-context environment variables: **available on Free** (scopes and deploy contexts can be chosen). Previews stay on Netlify.
-- Functions region: **fixed to Ohio (us-east-2) on Free**; choosing a region requires an upgrade. Supabase stays in Frankfurt: visitors get pages from the CDN and are unaffected, while uncached admin requests pay ~100 ms per database round trip. Moving the database to Ohio was rejected because later booking data (Could) would then sit in the US instead of the EU, the weaker choice for KVKK.
+- Functions region: **fixed to Ohio (us-east-2) on Free**; choosing a region requires an upgrade. Supabase stays in the EU: visitors get pages from the CDN and are unaffected, while uncached admin requests pay ~100 ms per database round trip. Moving the database to Ohio was rejected because later booking data (Could) would then sit in the US instead of the EU, the weaker choice for KVKK.
 - Commercial-use wording: still to re-read before the first release (issue #43).
+- Supabase region: the new-project screen only offers a broad "Europe" choice, which placed the dev project in **eu-west-1 (Ireland)** instead of Frankfurt. Accepted: still the EU for KVKK, and Ireland is slightly closer to Netlify's Ohio functions.
 
 ---
 

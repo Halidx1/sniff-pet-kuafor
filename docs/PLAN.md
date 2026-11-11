@@ -80,7 +80,7 @@ flowchart LR
     PX["proxy.ts (only /admin): refresh session, set CSP nonce"]
     FN["Server functions: page render on cache miss, Server Actions, Route Handlers"]
   end
-  subgraph S["Supabase Free: Frankfurt"]
+  subgraph S["Supabase Free: EU (Ireland)"]
     DB[("Postgres: RLS, RPCs, triggers, audit log, pg_cron")]
     AU["Auth: email + password + TOTP 2FA, sign-up disabled"]
     ST["Storage: bucket 'media'"]
@@ -122,7 +122,7 @@ flowchart LR
 | Local | `npm run dev` | Supabase in Docker (`npm run db:start`) | Seed + test data, reset with `npm run db:reset` |
 | CI | Production build on the runner | Supabase in Docker on the runner | Fresh every run |
 | PR previews + `main` branch deploy | Netlify, no credits used | **dev** Supabase project (cloud) | Demo data only |
-| Production | Netlify, `production` branch | **prod** Supabase project (Frankfurt) | Real data |
+| Production | Netlify, `production` branch | **prod** Supabase project (EU region) | Real data |
 
 Migrations are written locally and tested with `db:reset` plus the tests. Once merged, a workflow applies them to the dev project (push to `main`) or the prod project (push to `production`, environment-protected). Every migration is additive (expand/contract), so a deploy and its migration may land in either order.
 
@@ -470,7 +470,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 
 **Fallback:** Netlify Personal ($9/month). No Netlify-specific APIs are used, so moving hosts stays possible.
 
-**Region:** Supabase in Frankfurt. *Verified in M0:* on Free, Netlify functions always run in Ohio (us-east-2); choosing a region needs an upgrade. Visitors are unaffected (public pages come from the CDN); uncached admin requests pay ~100 ms per database round trip, kept low by running independent queries in parallel. Supabase stays in the EU for KVKK (ADR-003).
+**Region:** Supabase in the EU: the dashboard only offers a broad "Europe" choice, which gave the dev project eu-west-1 (Ireland). *Verified in M0:* on Free, Netlify functions always run in Ohio (us-east-2); choosing a region needs an upgrade. Visitors are unaffected (public pages come from the CDN); uncached admin requests pay ~100 ms per database round trip, kept low by running independent queries in parallel. Supabase stays in the EU for KVKK (ADR-003).
 
 **Until you buy the domain:** production runs at `<site>.netlify.app`. Turnstile's hostname is set to it, and auth emails use the interim Gmail SMTP (ADR-015).
 
@@ -507,7 +507,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
   - CI, CodeQL and Dependabot (npm + actions), with actions pinned to commit SHAs and read-only `permissions`
   - Netlify config: production branch `production`; previews `noindex`
   - `CLAUDE.md`, `PLAN.md`, `decisions.md`, README skeleton
-- **You do:** install Docker Desktop; create the dev Supabase project (Frankfurt); create the Netlify site from the repo and paste env vars; turn on branch protection (exact clicks provided). I'll create the GitHub repo with `gh` if it's signed in, otherwise you do.
+- **You do:** install Docker Desktop; create the dev Supabase project (EU region); create the Netlify site from the repo and paste env vars; turn on branch protection (exact clicks provided). I'll create the GitHub repo with `gh` if it's signed in, otherwise you do.
 - **Test:**
   - [ ] PR CI is green
   - [ ] The deploy preview shows "ş ğ ü ö ç İ ı" in the brand fonts
