@@ -32,3 +32,6 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
+
+# Developer-only milestone to-do lists (kept local)
+docs/milestones/
