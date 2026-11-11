@@ -350,7 +350,7 @@ These ship with the booking module's own migrations, not in the MVP.
 | *(every page)* | Closure banner, e.g. "12 Aralık Perşembe günü kapalıyız. …", shown while a closure with a public note is upcoming or active | business |
 | `/sitemap.xml`, `/robots.txt` | `/admin` disallowed; previews get `noindex` | — |
 
-Public data functions are cached with `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`, and each admin action calls `updateTag('<module>')` for the data it changed (ADR-018, added during M0). If Netlify fails the M2 verification gate, we fall back to `revalidatePath('/', 'layout')`.
+Public data functions are cached with `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`, and each admin action calls `updateTag('<module>')` for the data it changed (ADR-018, added during M0). The M2 verification gate passed on Netlify (ADR-018 is Accepted), so there is no fallback to `revalidatePath`.
 
 ### Admin (`src/app/admin/`: everything `noindex`, a strict nonce-based CSP, Turkish ASCII slugs)
 

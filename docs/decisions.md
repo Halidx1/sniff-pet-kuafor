@@ -29,7 +29,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [015](#adr-015-email-delivery) | Email delivery | Accepted |
 | [016](#adr-016-encrypted-backups-in-a-private-repository) | Encrypted backups in a private repository | Accepted |
 | [017](#adr-017-git-history-policy-and-authorship) | Git history policy and authorship | Accepted |
-| [018](#adr-018-caching-model-cache-components) | Caching model: Cache Components | Proposed (verify on Netlify in M2) |
+| [018](#adr-018-caching-model-cache-components) | Caching model: Cache Components | Accepted (verified on Netlify 2026-11-11) |
 | [019](#adr-019-work-tracking-on-github-and-release-merges) | Work tracking on GitHub and release merges | Accepted |
 
 ---
@@ -482,7 +482,7 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 ## ADR-018: Caching model: Cache Components
 
 - **Date:** 2026-11-11
-- **Status:** Proposed. Becomes Accepted once on-demand revalidation is verified on a Netlify deploy at the start of M2.
+- **Status:** Accepted (2026-11-11, after the M2 verification gate below). Previously Proposed.
 
 **Context.**
 - Next.js 16.4's `create-next-app` enables **Cache Components** (`cacheComponents: true`, `partialPrefetching: true`) by default.
@@ -501,6 +501,12 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 **Consequences.**
 - We follow the documented, future-proof Next.js model.
 - If Netlify fails the gate, switching costs about a day: data functions and action helpers change, components don't. The outcome is recorded by updating this ADR's status, or by a superseding ADR.
+
+**Verification result (2026-11-11, start of M2, issue #19).** A temporary page on a Netlify deploy preview (PR #58, closed unmerged) read the dev database inside `'use cache'` + `cacheTag('gate')` + `cacheLife('max')` and was prerendered as static. Then:
+- `updateTag('gate')` in a Server Action: the acting user saw the new value immediately, and other visitors on their next request.
+- `revalidateTag('gate', 'max')` in a Route Handler: the stale value was served once, the fresh one about 3 seconds later.
+
+The gate passed; no fallback is needed.
 
 ---
 
