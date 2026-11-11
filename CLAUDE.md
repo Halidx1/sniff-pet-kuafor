@@ -10,6 +10,8 @@ Sniff Pet Kuaför is the website, admin panel and (later) appointment-request sy
   - Public data functions use `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`; admin actions call `updateTag('<module>')`.
   - Runtime APIs (`cookies()`, `headers()`) go inside `<Suspense>`.
   - Dynamic route handlers call `await connection()`.
+  - `publicClient()` fetches with `cache: "no-store"`: Next's fetch cache would survive deploys, so `'use cache'` is the only cache layer.
+  - Client components never import a module's `index.ts` (it would bundle server code); they receive plain props.
 
 ## Non-negotiable rules
 

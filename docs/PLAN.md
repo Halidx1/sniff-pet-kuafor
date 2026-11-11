@@ -542,19 +542,21 @@ The owner can delete or shorten a closure; those times become bookable again at 
 
 - **Build:**
   - First domain modules + `eslint-plugin-boundaries` rules (moved from M1)
-  - UI kit (Button, Card, SectionHeading, Badge, Field, Dialog)
+  - UI kit (Button, Card, Section/SectionHeading, Badge, Container; form fields arrive with the admin in M3)
   - Layout: sticky header, hamburger `<dialog>`, always-visible mobile "Randevu Al" bar → `/randevu-al`, WhatsApp button only when a number is set, footer
   - All public pages with the exact fallback texts from §9/§10
-  - Image loader for the size variants; lazy map iframe
-  - `format.ts`: `₺1.250`, tr-TR dates, the "'den/'dan/'ten/'tan" suffix
-  - `phone.ts` (normalises to E.164); `/kvkk` draft; 404; per-page metadata; `/randevu-al` contact state
-  - Lighthouse CI
+  - `<img srcset>` from the stored widths (ADR-008 update); lazy map iframe
+  - `format.ts`: `₺1.250`, durations, the "'den/'dan/'ten/'tan" suffix
+  - `phone.ts` (readable format, `tel:`/`wa.me` links; normalising input to E.164 arrives with the admin forms in M3); `/kvkk` draft; 404; per-page metadata; `/randevu-al` contact state
+  - Lighthouse CI (run with `npx`, so its dependencies stay out of the lockfile)
+  - *Done at the start of M2:* the ADR-018 cache gate passed on Netlify
 - **Test:**
   - [ ] 375 px and desktop, no horizontal scroll
   - [ ] With nothing published, the fallbacks appear and **no demo content leaks** (E2E asserts this)
   - [ ] Keyboard navigation works and focus is visible
   - [ ] axe reports zero violations
   - [ ] Lighthouse ≥ 90
+  - E2E runs against the seed (nothing published) plus a local-only fixture that publishes two demo gallery photos, so the gallery and lightbox can be tested
 
 ### M3 — Admin content management (Must)
 

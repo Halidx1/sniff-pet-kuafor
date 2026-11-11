@@ -267,6 +267,8 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 - Re-encoding strips EXIF metadata, including GPS location.
 - Deleting an image must remove all variants (handled in the media module).
 
+**Update (2026-11-11, M2).** The site renders images with a plain `<img srcset>` built from each row's stored `widths` (`MediaImage` in the media module), not a custom `next/image` loader. A loader only receives a path and a width, so it can't know which variants exist for a given image (Instagram tiles, for example, have no 1600 px file); `srcset` lists exactly the stored files and lets the browser choose. The hero image loads eagerly with `fetchPriority="high"`.
+
 ---
 
 ## ADR-009: One public Storage bucket with unguessable paths
@@ -347,6 +349,8 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 **Alternatives considered.** *Editable in admin with a versions table:* lets legal text change without review, and adds more code.
 
 **Consequences.** Changing the notice requires a deploy, which is acceptable and even desirable for legal text.
+
+**Update (2026-11-11, M2).** The notice lives in `src/modules/content/kvkk-notice.ts` as a Markdown string with a `version` field, not in a separate `.md` file, so it is bundled with the code and never read from disk at runtime. It uses the same Markdown subset as the About text.
 
 ---
 
@@ -507,6 +511,8 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 - `revalidateTag('gate', 'max')` in a Route Handler: the stale value was served once, the fresh one about 3 seconds later.
 
 The gate passed; no fallback is needed.
+
+**Consequence found in M2.** Next's *fetch* cache, unlike `'use cache'`, survives new deploys. Because supabase-js uses `fetch`, a rebuild reused old database responses. `publicClient()` therefore sends every request with `cache: "no-store"`, leaving `'use cache'` + `cacheTag` as the single cache layer.
 
 ---
 
