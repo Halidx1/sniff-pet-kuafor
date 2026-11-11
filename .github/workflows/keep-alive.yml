@@ -1,0 +1,23 @@
+name: Keep-alive
+
+# Supabase Free pauses a project after about a week without activity (PLAN R2).
+# Every second day, call the health check of the main branch deploy, which
+# runs one tiny query against the dev project. Production is kept awake by the
+# nightly backup from M4 on.
+on:
+  schedule:
+    - cron: "23 5 */2 * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    name: Ping the dev deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: GET /api/health
+        env:
+          HEALTHCHECK_URL: https://main--sniffpetkuafor.netlify.app/api/health
+        run: curl --fail --silent --show-error --retry 3 --retry-delay 20 --max-time 30 "$HEALTHCHECK_URL"
