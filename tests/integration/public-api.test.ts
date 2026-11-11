@@ -13,11 +13,18 @@ describe("public REST API as a visitor", () => {
   });
 
   it("hides demo drafts", async () => {
-    for (const table of ["services", "service_prices", "addons", "faq_items", "media"] as const) {
+    for (const table of ["services", "service_prices", "addons", "faq_items"] as const) {
       const { data, error } = await visitor.from(table).select("id");
       expect(error, table).toBeNull();
       expect(data, table).toEqual([]);
     }
+  });
+
+  it("shows only published images", async () => {
+    // Stock photos may be published as decoration while staying flagged demo (SPEC §15).
+    const { data, error } = await visitor.from("media").select("is_published");
+    expect(error).toBeNull();
+    expect(data?.every((row) => row.is_published)).toBe(true);
   });
 
   it("refuses internal closure notes and the private schema", async () => {

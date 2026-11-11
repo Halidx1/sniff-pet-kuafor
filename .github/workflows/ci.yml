@@ -33,6 +33,8 @@ jobs:
         run: npx supabase start -x realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - name: Export local Supabase URL and keys
         run: npm run -s db:env >> "$GITHUB_ENV"
+      - name: Seed demo images
+        run: npm run seed:media
       - run: npm run lint
       - run: npm run format:check
       - name: Generated database types match the migrations
