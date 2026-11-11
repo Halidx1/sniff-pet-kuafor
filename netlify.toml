@@ -1,0 +1,12 @@
+# Netlify build settings (ADR-003). The production branch is set to `production` in the Netlify UI;
+# `main` becomes a free branch deploy and pull requests get free deploy previews.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Only the real production site may be indexed by search engines (see next.config.ts).
+[context.production.environment]
+  SITE_INDEXABLE = "true"
