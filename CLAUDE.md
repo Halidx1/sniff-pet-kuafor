@@ -111,3 +111,4 @@ docs/                    SPEC · PLAN · decisions · YONETICI_REHBERI · IMAGE_
 - Explain non-obvious choices in plain words, with Java or backend analogies, and avoid unexplained jargon.
 - Always give exact commands for manual steps. Uses git mainly through the GitHub UI.
 - At the end of each milestone, stop and report: what was built, manual steps (accounts, keys, dashboard settings) and how to test.
+- Also write `docs/milestones/M<n>.md` each milestone: the developer's to-do list and the checks, as Markdown checkboxes.
