@@ -41,9 +41,15 @@ const eslintConfig = defineConfig([
               allow: { to: { element: { type: "module", fileInternalPath: "index.ts" } } },
             },
             // The kernel knows nothing about modules.
-            { from: { element: { type: "shared" } }, allow: { to: { element: { type: "shared" } } } },
+            {
+              from: { element: { type: "shared" } },
+              allow: { to: { element: { type: "shared" } } },
+            },
             // Modules: shared, identity, and the edges listed above.
-            { from: { element: { type: "module" } }, allow: { to: { element: { type: "shared" } } } },
+            {
+              from: { element: { type: "module" } },
+              allow: { to: { element: { type: "shared" } } },
+            },
             { from: { element: { type: "module" } }, allow: moduleIndex("identity") },
             ...Object.entries(MODULE_DEPENDENCIES).flatMap(([from, targets]) =>
               targets.map((target) => ({
