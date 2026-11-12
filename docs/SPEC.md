@@ -85,7 +85,7 @@ This is my proposal. Challenge anything in the plan if there is a better free op
 | Validation | Zod schemas shared between client and server |
 | Transactional email | Free tier of a provider such as Resend (optional, see section 3) |
 | Spam protection | Cloudflare Turnstile (free) + honeypot field + server-side rate limiting |
-| Maps | Google Maps iframe embed (no API key) + "Yol Tarifi Al" link |
+| Maps | MapLibre GL + OpenFreeMap tiles (no API key, no cookies) showing only the shop's pin + "Yol Tarifi Al" link to Google Maps (ADR-020) |
 | Source control & CI | GitHub + GitHub Actions |
 | Testing | Vitest (unit tests), Playwright (a few end-to-end flows) |
 | Hosting | See section 3 |
@@ -148,9 +148,9 @@ The design must closely follow the logo: a deep navy illustration on a warm crea
 | navy | `#07152B` | Navigation, typography, buttons, important elements |
 | cream | `#F5E1CE` | Hero sections, backgrounds, decorative shapes, brand highlights |
 | white | `#FFFFFF` | Content cards, service sections, forms |
+| neutral-bg | `#FAF6F1` | Soft page background. Oat and sky blue were tried in the M2 review and rejected; the original whites stay (ADR-024). |
 | beige | `#E9D8C6` | Secondary warm accents |
-| neutral-bg | `#FAF6F1` | Soft page background |
-| muted-text | `#66625E` | Subtle supporting text. Darkened from `#77736F`, which failed WCAG AA on cream (3.7:1) and neutral-bg (4.37:1). Not used on beige. |
+| muted-text | `#66625E` | Subtle supporting text. Darkened from `#77736F`, which failed WCAG AA on cream (3.7:1). 5.62:1 on neutral-bg, 6.05:1 on white. Not used on beige. |
 | caramel | `#C98A4B` | Accent: badges, paw accents, decorative shapes, highlights. Text on it is always navy. Never used as a text colour on light backgrounds. |
 | danger | `#A63D2A` | Error messages and destructive buttons only. Success uses navy + a ✓ icon. |
 
@@ -166,7 +166,7 @@ Avoid colors beyond these tokens. Check that all text/background combinations me
 
 Friendly and welcoming; professional and trustworthy; modern and slightly playful; premium but approachable; pet-oriented without looking childish; clean, with generous whitespace.
 
-Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
+Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, issue #64), which falls back to a static picture. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
 
 Build a small, reusable component set once (Button, Card, SectionHeading, Badge, etc.) and use it everywhere.
 
@@ -215,16 +215,20 @@ All texts below are the initial content. Store section texts where it's practica
 
 ### Hero section
 
-Two columns on desktop; on mobile, text first and photo below.
+A **scroll-driven grooming story** (issue #64, added after the M2 review; design in progress). The first screen shows the texts below next to an illustrated scruffy dog. As the visitor scrolls, the dog is brushed, its fur is trimmed with scissors, and then a cat is brushed. Illustrations are original flat drawings in navy and caramel on cream, never photos, AI images or a redrawn logo. The scenes show only grooming already listed in §9 and carry no captions with new claims.
 
-Left column:
+- The texts are real HTML, visible on the first screen without scrolling.
+- Native scrolling only; nothing is hijacked.
+- With `prefers-reduced-motion`, the story is a static picture of the groomed pets.
+
+Texts:
 - Headline: **"Küçük Dostlarınız, Büyük Bir Özeni Hak Ediyor!"**
 - Subtitle: **"Kedi ve Köpek Bakımında Profesyonel Dokunuş."**
 - Supporting text: **"Minik dostlarınızın bakım ihtiyaçları için özenli, sevgi dolu ve profesyonel bir yaklaşım."**
 - Primary button: **"Hemen Randevu Al"** → `/randevu-al`
 - Secondary button: **"Hizmetlerimizi Keşfet"** → `/hizmetlerimiz`
 
-Right column: a high-quality photo of a freshly groomed dog and/or cat (replaceable from admin). Warm cream background with subtle organic decorative shapes.
+After the story, a **paw trail**: the brand introduction and the four "why choose us" points appear inside paw-print shapes, alternating left and right like footsteps (one column on phones). The first paw holds the hero photo of a freshly groomed dog and/or cat (replaceable from admin).
 
 ### Brand introduction
 
@@ -244,7 +248,7 @@ If no services are published yet, show the fallback text from section 9 instead 
 
 Heading: **"Minik Dostlarınız İçin Özenli Bakım"**
 
-Four information cards:
+Four paws in the paw trail (see Hero section):
 - Özenli Bakım
 - Kedi ve Köpeklere Özel Yaklaşım
 - Randevulu Hizmet
@@ -279,7 +283,7 @@ Use a **static preview**: a small grid of admin-uploaded images, plus a follow b
 
 Heading: **"Bizi Ziyaret Edin"**
 
-Show the address and an embedded Google Map (iframe). Button **"Yol Tarifi Al"** links to the Google Maps URL from business settings. The map must not break the layout on narrow screens.
+Show the address and a map with **only the shop's pin** — no other businesses or points of interest (ADR-020). The pin uses the coordinates stored in business settings; without coordinates, no map is shown. Button **"Yol Tarifi Al"** links to the Google Maps URL from business settings. The map must not break the layout on narrow screens.
 
 ### Final call to action
 

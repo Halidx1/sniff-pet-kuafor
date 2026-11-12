@@ -2,6 +2,8 @@
 -- start empty until the owner provides them (SPEC §18, issue "Owner questions").
 -- The coordinates are the pin of the owner's own Google Maps listing (maps_url),
 -- read from its redirect; the owner confirms them in the needs-owner issue.
+-- Note: the CLI runs each seed file once per project and does not re-run it when it changes;
+-- data for projects that already exist needs a migration (see *_business_location_backfill.sql).
 -- Idempotent: safe to re-run. On an existing row only missing coordinates are filled,
 -- so values the owner has edited are never overwritten.
 insert into public.business_profile (business_name, slogan, address, maps_url, instagram_url, latitude, longitude)

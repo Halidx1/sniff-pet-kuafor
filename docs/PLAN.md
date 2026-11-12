@@ -545,7 +545,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
   - UI kit (Button, Card, Section/SectionHeading, Badge, Container; form fields arrive with the admin in M3)
   - Layout: sticky header, hamburger `<dialog>`, always-visible mobile "Randevu Al" bar → `/randevu-al`, WhatsApp button only when a number is set, footer
   - All public pages with the exact fallback texts from §9/§10
-  - `<img srcset>` from the stored widths (ADR-008 update); lazy map iframe
+  - `<img srcset>` from the stored widths (ADR-008 update); lazy map (MapLibre, ADR-020)
   - `format.ts`: `₺1.250`, durations, the "'den/'dan/'ten/'tan" suffix
   - `phone.ts` (readable format, `tel:`/`wa.me` links; normalising input to E.164 arrives with the admin forms in M3); `/kvkk` draft; 404; per-page metadata; `/randevu-al` contact state
   - Lighthouse CI (run with `npx`, so its dependencies stay out of the lockfile)
@@ -557,6 +557,21 @@ The owner can delete or shorten a closure; those times become bookable again at 
   - [ ] axe reports zero violations
   - [ ] Lighthouse ≥ 90
   - E2E runs against the seed (nothing published) plus a local-only fixture that publishes two demo gallery photos, so the gallery and lightbox can be tested
+
+#### M2 review changes (added 2026-11-12)
+
+Found by the developer while reviewing the M2 deploy preview; built on the same branch and PR.
+
+- **Build:**
+  - Map shows only the shop: MapLibre + OpenFreeMap, coordinates in `business_profile` (ADR-020)
+  - The 404 "BLOCKED" bar was Netlify's deploy-preview Drawer (an iframe it injects on every preview page, blocked by our CSP), not our code. It is turned off in the Netlify UI. E2E now checks that the 404 keeps the security headers
+  - Third colour: oat (ADR-021) and sky blue (ADR-023) were tried on the preview and rejected; the original white and neutral-bg stay (ADR-024)
+  - Homepage scroll story (dog brushed and trimmed, then a cat brushed) + paw trail for the welcome text and "why us" points: the first CSS-only version (ADR-022) was rejected in review; it is redesigned in a follow-up PR (issue #64)
+- **Test:**
+  - [ ] The map shows one paw pin and no other businesses; two fingers pan it on a phone
+  - [ ] A made-up URL on the preview shows the 404 without a bar (Drawer off, private window)
+  - [ ] No white surfaces left; axe still reports zero contrast violations
+  - [ ] Lighthouse ≥ 90 on `/` with the map
 
 ### M3 — Admin content management (Must)
 
@@ -662,7 +677,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 - **A7** *(Could)* Only (service, tier) combinations with an owner-confirmed duration are bookable.
 - **A8** *(Could)* Auto-expired and closure-cancelled requests are stored as `cancelled` with a `cancel_reason` (`expired` / `business_closed`), keeping the spec's six statuses.
 - **A9** *(Could)* Reference codes are `SP-` + 6 digits; 4 digits would collide within a couple of years.
-- **A10** No analytics or tracking cookies on the public site, so no cookie banner. Google Maps and Turnstile are named in the KVKK draft for legal review.
+- **A10** No analytics or tracking cookies on the public site, so no cookie banner. OpenFreeMap (map tiles, ADR-020) and Turnstile are named in the KVKK draft for legal review.
 - **A11** "Rich text" for About means Markdown with a 3-button toolbar (bold, list, heading), rendered without HTML.
 - **A12** The 3 Instagram posts remain `is_demo` Instagram tiles, never hero or gallery photos.
 

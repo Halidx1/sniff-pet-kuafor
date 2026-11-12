@@ -25,12 +25,17 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [011](#adr-011-rate-limiting-in-postgres) | Rate limiting in Postgres | Accepted (Could, M5) |
 | [012](#adr-012-kvkk-notice-versioned-in-the-repository) | KVKK notice versioned in the repository | Accepted |
 | [013](#adr-013-native-html-primitives-and-an-in-house-ui-kit) | Native HTML primitives and an in-house UI kit | Accepted |
-| [014](#adr-014-colour-palette-adjustments) | Colour palette adjustments | Accepted |
+| [014](#adr-014-colour-palette-adjustments) | Colour palette adjustments | Accepted (amended by ADR-021) |
 | [015](#adr-015-email-delivery) | Email delivery | Accepted |
 | [016](#adr-016-encrypted-backups-in-a-private-repository) | Encrypted backups in a private repository | Accepted |
 | [017](#adr-017-git-history-policy-and-authorship) | Git history policy and authorship | Accepted |
 | [018](#adr-018-caching-model-cache-components) | Caching model: Cache Components | Accepted (verified on Netlify 2026-11-11) |
 | [019](#adr-019-work-tracking-on-github-and-release-merges) | Work tracking on GitHub and release merges | Accepted |
+| [020](#adr-020-a-clean-map-maplibre-and-openfreemap) | A clean map: MapLibre and OpenFreeMap | Accepted |
+| [021](#adr-021-warm-oat-replaces-white-backgrounds) | Warm oat replaces white backgrounds | Superseded by ADR-024 |
+| [022](#adr-022-scroll-driven-homepage-story-with-css-only) | Scroll-driven homepage story with CSS only | Superseded (rejected in review) |
+| [023](#adr-023-sky-blue-replaces-oat) | Sky blue replaces oat | Superseded by ADR-024 |
+| [024](#adr-024-keep-the-original-white-and-neutral-bg) | Keep the original white and neutral-bg | Accepted |
 
 ---
 
@@ -543,4 +548,114 @@ The gate passed; no fallback is needed.
 - Progress, decisions and code are linked and visible on GitHub.
 - Claude keeps issue status and the board current as part of each milestone.
 - The branch-protection rule for `production` must allow merge commits.
+
+---
+
+## ADR-020: A clean map: MapLibre and OpenFreeMap
+
+- **Date:** 2026-11-12
+- **Status:** Accepted
+
+**Context.**
+- In the M2 review the keyless Google Maps iframe (`?q=<address>&output=embed`) showed a zoomed-out area full of other businesses and no clear shop pin.
+- The developer wants the map to show **only the shop**. Google's free iframe can't hide points of interest; hiding them needs a Google API key with billing enabled.
+
+**Decision.**
+- Draw the map with **MapLibre GL JS** (BSD licence) and **OpenFreeMap**'s "positron" style (free for commercial use, no key, no account, no cookies).
+- A pure function (`business/domain/map-style.ts`) removes point-of-interest, airport and house-number layers, switches labels to Turkish names and tints the background oat.
+- One navy/caramel paw pin at new `business_profile.latitude/longitude` columns. The seed takes them from the owner's own Google Maps listing; the owner confirms them. No coordinates → no map.
+- The engine is a dynamic `import()` triggered by an IntersectionObserver, so its ~1 MB of JS and its CSS never load before the map is near the viewport. MapLibre's worker file is copied to `public/vendor/` before `dev`/`build`, because bundlers don't ship it.
+- `cooperativeGestures` (two fingers on phones, Ctrl/⌘ + scroll on desktop), so the map never traps page scrolling.
+- CSP: `connect-src` adds `https://tiles.openfreemap.org`, `worker-src 'self'`, and `frame-src` becomes `'none'`.
+- "Yol Tarifi Al" still links to the owner's Google Maps listing.
+
+**Alternatives considered.**
+- *Google iframe of the shop's own listing* ("Share → Embed a map"): shows the pin and name, but neighbouring businesses stay visible.
+- *Google Static Maps* with points of interest hidden: clean, but needs a Google Cloud account with billing and an API key, and isn't draggable.
+- *Leaflet with OpenStreetMap or CARTO raster tiles:* raster tiles have points of interest baked in; CARTO's free tier is non-commercial.
+
+**Consequences.**
+- No third-party cookies or iframes on the public site; the KVKK draft names OpenFreeMap instead of Google.
+- OpenFreeMap has no SLA. If it's down, the map box shows a link to Google Maps; the rest of the page is unaffected. E2E stubs it, so CI never depends on it.
+- `map_embed_url` is unused and will be dropped in a later contract migration.
+
+---
+
+## ADR-021: Warm oat replaces white backgrounds
+
+- **Date:** 2026-11-12
+- **Status:** Superseded by ADR-023, then ADR-024 (oat was too close to the logo's cream). Amended ADR-014.
+
+**Context.** In the M2 review the developer found the white cards (`#FFFFFF`) and near-white page bands (`neutral-bg #FAF6F1`) too stark next to the logo's navy and cream, and asked for a matching third colour instead of white.
+
+**Decision.**
+- Remove the `white` and `neutral-bg` tokens. Add `oat` `#EDE3D6` (page background and plain bands) and `oat-light` `#F3ECE2` (cards and forms).
+- Navy, cream, beige, caramel, muted-text and danger are unchanged.
+- Contrast (WCAG AA ≥ 4.5): navy 14.38 on oat and 15.56 on oat-light; muted-text 4.77 and 5.16; danger 4.98 and 5.39.
+
+**Alternatives considered.** *Sage mist* (`#E3E7D8`) and *dusty blue* (`#DDE4EC`) were offered; the developer chose the warm option, which keeps the cosy feel.
+
+**Consequences.** Because Tailwind's default palette is removed (ADR-014), any leftover `bg-white` renders no colour and is easy to spot; `grep` finds none.
+
+---
+
+## ADR-022: Scroll-driven homepage story with CSS only
+
+- **Date:** 2026-11-12
+- **Status:** Superseded (2026-11-12). The developer reviewed the first CSS-only version on the deploy preview and rejected it as far from the intended experience (references: bonito-flakes-for-pets.com, webdesign.kernjosh.com, jitter.video). It was taken out of PR #65 before merging; a follow-up PR replaces it with a GSAP-based story (issue #64), recorded in a new ADR.
+
+**Context.** The developer asked for a homepage that animates as the visitor scrolls: a dog is brushed and trimmed, then a cat is brushed. After that, the welcome text and details appear inside paws. SPEC §6 had asked to avoid excessive animation.
+
+**Decision.**
+- Use **CSS scroll-driven animations** (`view-timeline`, `animation-timeline`, `animation-range`). A tall section holds a sticky stage, and the scroll position inside it drives each keyframe.
+- The story stays a Server Component: no animation library and no client JavaScript. Only `transform` and `opacity` are animated, which browsers can run off the main thread.
+- The illustrations are original inline SVGs in navy and caramel on cream (not photos, not AI images, not the logo).
+- The hero texts and buttons are on the first screen as real HTML. The welcome text and the four "why us" points follow in a paw trail in normal page flow.
+- **Fallback:** without `animation-timeline` support, or with `prefers-reduced-motion: reduce`, the stage isn't sticky and shows the final, groomed picture; the paws are simply visible.
+
+**Alternatives considered.**
+- *Motion (Framer Motion) or GSAP ScrollTrigger:* works in every browser, but adds 30–70 KB of client JS and makes the hero a client component.
+- *A video or Lottie file:* heavy, harder to keep accessible, and needs an animation tool and a licence.
+
+**Consequences.**
+- Chrome, Edge and Safari 26+ animate; other browsers show the static picture, which still contains every text.
+- SPEC §6 and §8 are updated: one scroll story is allowed, other pages stay calm.
+
+---
+
+## ADR-023: Sky blue replaces oat
+
+- **Date:** 2026-11-12
+- **Status:** Superseded by ADR-024 (the developer preferred the original whites). Superseded ADR-021.
+
+**Context.**
+- On the deploy preview the developer found oat (`#EDE3D6`) too close to the logo's cream (`#F5E1CE`): bands and headers blurred together.
+- The two colours have the same lightness (contrast 1.00:1) and a similar warm hue, so nothing told them apart.
+- Every light candidate is about as light as cream, so the difference has to come from hue.
+
+**Decision.**
+- Replace `oat`/`oat-light` with `sky` `#D6E1EC` (page background and plain bands) and `sky-light` `#EBF1F7` (cards and forms): a light tint of the logo navy.
+- Contrast (WCAG AA ≥ 4.5): navy 13.76 on sky and 16.03 on sky-light; muted-text 4.56 and 5.31; danger 4.77.
+- The map background follows `sky-light`.
+
+**Alternatives considered.** *Mist blue* (`#DFE6EE`, softer, weaker separation) and *sage* (`#E1E6D6`, less tied to the navy); the developer compared all three on the real pages and chose sky blue.
+
+**Consequences.**
+- Warm cream (headers, hero) and cool sky (bands) now alternate visibly.
+- The token names changed (`bg-oat` → `bg-sky`), so a leftover old class renders no colour and is easy to spot.
+
+---
+
+## ADR-024: Keep the original white and neutral-bg
+
+- **Date:** 2026-11-12
+- **Status:** Accepted. Supersedes ADR-021 and ADR-023; ADR-014's palette stands.
+
+**Context.** In the M2 review the developer first found white too stark next to the logo and tried two replacements on the deploy preview: warm oat (ADR-021), too close to the logo's cream, then sky blue (ADR-023), which they didn't like either. Seeing all three, they preferred the original.
+
+**Decision.** Keep `white` `#FFFFFF` (cards, forms) and `neutral-bg` `#FAF6F1` (page background) from ADR-014. The `oat`/`sky` tokens are removed; the map background follows `neutral-bg`.
+
+**Alternatives considered.** Oat (ADR-021), sky blue (ADR-023), mist blue and sage, all compared on the real pages.
+
+**Consequences.** No palette change ships from the M2 review. The warmth and character the developer was missing come from the homepage art direction instead (hand-drawn story, separate PR).
 
