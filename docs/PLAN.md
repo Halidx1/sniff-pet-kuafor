@@ -350,7 +350,7 @@ These ship with the booking module's own migrations, not in the MVP.
 | *(every page)* | Closure banner, e.g. "12 Aralık Perşembe günü kapalıyız. …", shown while a closure with a public note is upcoming or active | business |
 | `/sitemap.xml`, `/robots.txt` | `/admin` disallowed; previews get `noindex` | — |
 
-Public data functions are cached with `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`, and each admin action calls `updateTag('<module>')` for the data it changed (ADR-018, added during M0). If Netlify fails the M2 verification gate, we fall back to `revalidatePath('/', 'layout')`.
+Public data functions are cached with `'use cache'` + `cacheTag('<module>')` + `cacheLife('max')`, and each admin action calls `updateTag('<module>')` for the data it changed (ADR-018, added during M0). The M2 verification gate passed on Netlify (ADR-018 is Accepted), so there is no fallback to `revalidatePath`.
 
 ### Admin (`src/app/admin/`: everything `noindex`, a strict nonce-based CSP, Turkish ASCII slugs)
 
@@ -542,19 +542,37 @@ The owner can delete or shorten a closure; those times become bookable again at 
 
 - **Build:**
   - First domain modules + `eslint-plugin-boundaries` rules (moved from M1)
-  - UI kit (Button, Card, SectionHeading, Badge, Field, Dialog)
+  - UI kit (Button, Card, Section/SectionHeading, Badge, Container; form fields arrive with the admin in M3)
   - Layout: sticky header, hamburger `<dialog>`, always-visible mobile "Randevu Al" bar → `/randevu-al`, WhatsApp button only when a number is set, footer
   - All public pages with the exact fallback texts from §9/§10
-  - Image loader for the size variants; lazy map iframe
-  - `format.ts`: `₺1.250`, tr-TR dates, the "'den/'dan/'ten/'tan" suffix
-  - `phone.ts` (normalises to E.164); `/kvkk` draft; 404; per-page metadata; `/randevu-al` contact state
-  - Lighthouse CI
+  - `<img srcset>` from the stored widths (ADR-008 update); lazy map (MapLibre, ADR-020)
+  - `format.ts`: `₺1.250`, durations, the "'den/'dan/'ten/'tan" suffix
+  - `phone.ts` (readable format, `tel:`/`wa.me` links; normalising input to E.164 arrives with the admin forms in M3); `/kvkk` draft; 404; per-page metadata; `/randevu-al` contact state
+  - Lighthouse CI (run with `npx`, so its dependencies stay out of the lockfile)
+  - *Done at the start of M2:* the ADR-018 cache gate passed on Netlify
 - **Test:**
   - [ ] 375 px and desktop, no horizontal scroll
   - [ ] With nothing published, the fallbacks appear and **no demo content leaks** (E2E asserts this)
   - [ ] Keyboard navigation works and focus is visible
   - [ ] axe reports zero violations
   - [ ] Lighthouse ≥ 90
+  - E2E runs against the seed (nothing published) plus a local-only fixture that publishes two demo gallery photos, so the gallery and lightbox can be tested
+
+#### M2 review changes (added 2026-11-12)
+
+Found by the developer while reviewing the M2 deploy preview; built on the same branch and PR.
+
+- **Build:**
+  - Map shows only the shop: MapLibre + OpenFreeMap, coordinates in `business_profile` (ADR-020)
+  - The 404 "BLOCKED" bar was Netlify's deploy-preview Drawer (an iframe it injects on every preview page, blocked by our CSP), not our code. It is turned off in the Netlify UI. E2E now checks that the 404 keeps the security headers
+  - Warm oat replaces white and off-white backgrounds (ADR-021)
+  - Homepage scroll story (dog brushed and trimmed, then a cat brushed) + paw trail for the welcome text and "why us" points (ADR-022)
+- **Test:**
+  - [ ] The map shows one paw pin and no other businesses; two fingers pan it on a phone
+  - [ ] A made-up URL on the preview shows the 404 without a bar (Drawer off, private window)
+  - [ ] No white surfaces left; axe still reports zero contrast violations
+  - [ ] The story animates in Chrome and Safari; with "reduce motion" on, it is a static picture and every text is visible
+  - [ ] Lighthouse ≥ 90 on `/` with the story and the map
 
 ### M3 — Admin content management (Must)
 
@@ -660,7 +678,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 - **A7** *(Could)* Only (service, tier) combinations with an owner-confirmed duration are bookable.
 - **A8** *(Could)* Auto-expired and closure-cancelled requests are stored as `cancelled` with a `cancel_reason` (`expired` / `business_closed`), keeping the spec's six statuses.
 - **A9** *(Could)* Reference codes are `SP-` + 6 digits; 4 digits would collide within a couple of years.
-- **A10** No analytics or tracking cookies on the public site, so no cookie banner. Google Maps and Turnstile are named in the KVKK draft for legal review.
+- **A10** No analytics or tracking cookies on the public site, so no cookie banner. OpenFreeMap (map tiles, ADR-020) and Turnstile are named in the KVKK draft for legal review.
 - **A11** "Rich text" for About means Markdown with a 3-button toolbar (bold, list, heading), rendered without HTML.
 - **A12** The 3 Instagram posts remain `is_demo` Instagram tiles, never hero or gallery photos.
 

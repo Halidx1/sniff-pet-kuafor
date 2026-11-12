@@ -2,7 +2,7 @@
 
 Website, admin panel and (later) online appointment requests for **Sniff Pet Kuaför**, a cat and dog grooming shop in Gölbaşı, Ankara. Turkish-only, mobile-first, built to run at €0/month.
 
-> **Status:** M1 (data layer). A branded "Çok yakında" page is live; the database, demo content and tests are in place; the real site arrives in M2. Progress: [project board](https://github.com/users/Halidx1/projects/2) and [milestones](https://github.com/Halidx1/sniff-pet-kuafor/milestones). See the [milestones](docs/PLAN.md#6-milestones-moscow-m0m4--must-the-mvp-launch-m5m6--could-booking).
+> **Status:** M2 (public site). All public pages read from the database, with fallback texts while nothing is published; the admin panel arrives in M3. Progress: [project board](https://github.com/users/Halidx1/projects/2) and [milestones](https://github.com/Halidx1/sniff-pet-kuafor/milestones). See the [milestones](docs/PLAN.md#6-milestones-moscow-m0m4--must-the-mvp-launch-m5m6--could-booking).
 
 ## Documentation
 
@@ -49,7 +49,8 @@ npm run verify                          # lint, format, types, pgTAP, unit + int
 | `npm run format` / `npm run format:check` | Prettier write / check |
 | `npm test` | Unit and integration tests (Vitest; integration tests need `db:start`) |
 | `npm run test:db` | Database tests: RLS, grants, constraints, triggers (pgTAP) |
-| `npm run test:e2e` | Build, then end-to-end + accessibility tests (Playwright + axe) |
+| `npm run test:e2e` | Publish two demo gallery photos in the local DB, build, then end-to-end + accessibility tests (Playwright + axe) |
+| `npm run lighthouse` | Lighthouse CI on four pages of the last build (needs Google Chrome) |
 | `npm run db:start` / `db:stop` | Start / stop local Supabase in Docker |
 | `npm run db:reset` | Re-apply all migrations and SQL seed (then re-run `seed:media`) |
 | `npm run db:types` | Regenerate `src/shared/supabase/database.types.ts` after a migration (CI fails if stale) |

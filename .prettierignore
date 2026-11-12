@@ -7,3 +7,5 @@ supabase/.temp
 package-lock.json
 # Markdown docs are formatted by hand (wide tables).
 *.md
+lighthouse-report
+.lighthouseci

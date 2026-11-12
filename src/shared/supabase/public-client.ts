@@ -12,6 +12,9 @@ export function publicClient() {
     requiredEnv("SUPABASE_PUBLISHABLE_KEY"),
     {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      // 'use cache' + cacheTag is our only cache (ADR-018). Next's fetch cache would also keep
+      // these responses *across deploys*, so a redeploy could still show old data.
+      global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
     },
   );
 }

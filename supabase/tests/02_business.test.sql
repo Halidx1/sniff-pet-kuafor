@@ -1,7 +1,7 @@
 -- business: public reads, admin-only writes, data rules.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(14);
+select plan(18);
 
 insert into auth.users (id, email) values ('aaaaaaaa-0000-4000-8000-000000000001', 'admin@example.test');
 insert into private.admins (user_id, display_name) values ('aaaaaaaa-0000-4000-8000-000000000001', 'Test Admin');
@@ -12,6 +12,8 @@ insert into public.closures (id, starts_at, ends_at, public_note, internal_note)
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 set local role anon;
 select is((select business_name from public.business_profile), 'Sniff Pet Kuaför', 'anon reads the business profile');
+select is((select (latitude, longitude)::text from public.business_profile), '(39.797668,32.802474)',
+  'anon reads the map coordinates');
 select is((select public_note from public.closures), 'Bugün kapalıyız.', 'anon reads a closure''s public note');
 select throws_ok('select internal_note from public.closures', '42501', null, 'anon cannot read a closure''s internal note');
 select throws_ok($$ update public.business_profile set slogan = 'x' $$, '42501', null, 'anon cannot edit the profile');
@@ -44,6 +46,12 @@ select throws_ok($$ update public.business_profile set phone_e164 = '0532 123 45
   '23514', null, 'phone numbers must be stored as +90XXXXXXXXXX');
 select throws_ok($$ update public.business_profile set map_embed_url = 'https://evil.example/embed' $$,
   '23514', null, 'only Google Maps embed URLs are accepted for the map iframe');
+select throws_ok($$ update public.business_profile set latitude = 91, longitude = 32 $$,
+  '23514', null, 'a latitude outside -90..90 is refused');
+select throws_ok($$ update public.business_profile set latitude = null $$,
+  '23514', null, 'latitude and longitude are set together or not at all');
+select lives_ok($$ update public.business_profile set latitude = null, longitude = null $$,
+  'clearing both coordinates is allowed (the site then shows no map)');
 reset role;
 
 select * from finish();
