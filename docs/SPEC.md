@@ -219,7 +219,7 @@ A **scroll-driven grooming story** (ADR-025, added after the M2 review). Art dir
 
 - The texts are real HTML, visible on the first screen without scrolling.
 - Native scrolling only; nothing is hijacked.
-- With `prefers-reduced-motion` (e.g. Windows "Animation effects" off, a common default), the story plays in a **gentle version**: the same chapters, but things fade and lines draw instead of flying, sliding or zooming, and smooth scrolling is off.
+- With `prefers-reduced-motion` (e.g. Windows "Animation effects" off, a common default), the story plays in a **gentle version**: the same chapters, but things fade and lines draw instead of flying, sliding or zooming, and smooth scrolling is off. A button "Animasyonu tam hızda oynat" lets these visitors switch to the full version (remembered on their device).
 
 Texts:
 - Headline: **"Küçük Dostlarınız, Büyük Bir Özeni Hak Ediyor!"**
