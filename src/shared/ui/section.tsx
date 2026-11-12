@@ -3,7 +3,7 @@ import { Container } from "./container";
 type Tone = "plain" | "cream" | "navy";
 
 const TONES: Record<Tone, string> = {
-  plain: "bg-neutral-bg text-navy",
+  plain: "bg-oat text-navy",
   cream: "bg-cream text-navy",
   navy: "bg-navy text-cream",
 };

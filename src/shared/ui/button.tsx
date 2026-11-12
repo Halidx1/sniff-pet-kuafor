@@ -5,7 +5,7 @@ type Variant = "primary" | "secondary" | "light";
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-navy text-cream hover:bg-navy/90",
   secondary: "border-2 border-navy text-navy hover:bg-navy hover:text-cream",
-  light: "bg-cream text-navy hover:bg-white", // on navy backgrounds
+  light: "bg-cream text-navy hover:bg-oat-light", // on navy backgrounds
 };
 
 const BASE =
