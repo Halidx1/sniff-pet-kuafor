@@ -283,7 +283,7 @@ Use a **static preview**: a small grid of admin-uploaded images, plus a follow b
 
 Heading: **"Bizi Ziyaret Edin"**
 
-Show the address and a map with **only the shop's pin** — no other businesses or points of interest (ADR-020). The pin uses the coordinates stored in business settings; without coordinates, no map is shown. Button **"Yol Tarifi Al"** links to the Google Maps URL from business settings. The map must not break the layout on narrow screens.
+Show the address and a map with **only the shop's pin** — no other businesses or points of interest (ADR-020). The pin uses the coordinates stored in business settings; without coordinates, no map is shown. Button **"Yol Tarifi Al"**, a tap on the map and a tap on the pin all open directions: the phone's maps app (Apple Maps on iOS, the default app via a `geo:` link on Android) or, on a computer, the Google Maps URL from business settings in a new tab. The map's licence info (attribution) starts collapsed behind its "i" button. The map must not break the layout on narrow screens.
 
 ### Final call to action
 

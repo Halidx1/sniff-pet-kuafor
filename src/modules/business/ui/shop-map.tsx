@@ -2,11 +2,14 @@
 
 import { MapPin } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useDirections } from "./use-directions";
 
 type Props = {
+  /** Shown to the maps app as the destination's name. */
+  name: string;
   latitude: number;
   longitude: number;
-  /** Google Maps link for the fallback when the map can't load. */
+  /** The owner's Google Maps link: desktop directions and the fallback if the map fails. */
   mapsUrl: string | null;
   className?: string;
 };
@@ -15,10 +18,17 @@ type Props = {
  * The shop's position on a clean map (ADR-020): streets only, one brand pin, no other
  * businesses. The map engine is downloaded only when this box scrolls near the viewport;
  * until then (and if loading fails) a same-sized placeholder holds the space.
+ * Tapping the map or the pin opens directions in the device's maps app.
  */
-export function ShopMap({ latitude, longitude, mapsUrl, className = "" }: Props) {
+export function ShopMap({ name, latitude, longitude, mapsUrl, className = "" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"waiting" | "ready" | "failed">("waiting");
+  // The map reads the latest link at click time (it changes once the device is known).
+  const directions = useDirections({ name, latitude, longitude, mapsUrl });
+  const directionsRef = useRef(directions);
+  useEffect(() => {
+    directionsRef.current = directions;
+  });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -31,7 +41,9 @@ export function ShopMap({ latitude, longitude, mapsUrl, className = "" }: Props)
         if (!entries.some((entry) => entry.isIntersecting)) return;
         observer.disconnect();
         import("./shop-map-engine")
-          .then(({ mountShopMap }) => mountShopMap(container, { latitude, longitude }))
+          .then(({ mountShopMap }) =>
+            mountShopMap(container, { latitude, longitude }, () => directionsRef.current),
+          )
           .then((remove) => {
             if (cancelled) return remove();
             cleanup = remove;

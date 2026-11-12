@@ -164,3 +164,41 @@ test("gallery filters by pet and browses photos in a lightbox", async ({ page })
   await expect(lightbox).toBeHidden();
   await expect(thumbs.first()).toBeFocused();
 });
+
+test("the map opens directions: the device's maps app on phones, Google Maps on desktop", async ({
+  page,
+  isMobile,
+}) => {
+  // Record window.open calls instead of opening real tabs.
+  await page.addInitScript(() => {
+    (window as unknown as { opened: string[] }).opened = [];
+    window.open = (url?: string | URL) => {
+      (window as unknown as { opened: string[] }).opened.push(String(url));
+      return null;
+    };
+  });
+  await page.goto("/iletisim");
+  const map = page.locator("main [data-map-status]");
+  await map.scrollIntoViewIfNeeded();
+  await expect(map).toHaveAttribute("data-map-status", "ready");
+
+  // The licence info starts collapsed (one tap away behind the "i" button).
+  await expect(map.locator(".maplibregl-ctrl-attrib")).not.toHaveClass(/maplibregl-compact-show/);
+
+  // Pixel 7 (the mobile project) is Android → geo: link; desktop → the owner's Google link.
+  const expected = isMobile ? /^geo:39\.797668,32\.802474\?q=/ : /^https:\/\/maps\.app\.goo\.gl\//;
+  await expect(page.getByRole("link", { name: "Yol Tarifi Al", exact: true })).toHaveAttribute(
+    "href",
+    expected,
+  );
+  await expect(
+    page.getByRole("link", { name: "Sniff Pet Kuaför'e yol tarifi al" }),
+  ).toHaveAttribute("href", expected);
+
+  if (!isMobile) {
+    await map.locator("canvas").click({ position: { x: 40, y: 200 } });
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { opened: string[] }).opened))
+      .toEqual(["https://maps.app.goo.gl/ipSQ9QxkoMe3rBi49"]);
+  }
+});
