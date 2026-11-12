@@ -23,6 +23,13 @@ for (const { path, h1 } of PAGES) {
     await expect(page.locator("html")).toHaveAttribute("lang", "tr");
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(h1);
+    // Let one-off page-load animations finish: half-faded text would count as low contrast.
+    await page.waitForFunction(() =>
+      document
+        .getAnimations()
+        .filter((anim) => anim.effect?.getTiming().iterations !== Infinity)
+        .every((anim) => anim.playState === "finished"),
+    );
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze();
@@ -179,6 +186,9 @@ test("scrolling plays the story: the hero pins and the chapters change", async (
   const pin = page.locator(".hs-pin");
   const startTop = await pin.evaluate((el) => el.getBoundingClientRect().top);
   // Halfway into the story: still pinned at the top, a caption is showing.
+  // Wait for the story to set up its pin: scrolling earlier would make ScrollTrigger
+  // keep the visitor's place and jump past the story.
+  await page.locator(".pin-spacer").waitFor({ state: "attached" });
   await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
   await expect.poll(() => pin.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(0);
   expect(startTop).toBeGreaterThan(0);
@@ -191,15 +201,25 @@ test("scrolling plays the story: the hero pins and the chapters change", async (
 test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test("the story is a still picture of both groomed pets", async ({ page }) => {
+  test("the story plays gently: it pins and reaches the cat, but nothing flies", async ({
+    page,
+  }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.locator(".hs-cat")).toBeVisible();
-    await expect(page.locator(".hs-brush")).toBeHidden();
-    await expect(page.locator(".hs-strand").first()).toBeHidden();
+    // Wait for the story to set up its pin: scrolling earlier would make ScrollTrigger
+    // keep the visitor's place and jump past the story.
+    await page.locator(".pin-spacer").waitFor({ state: "attached" });
     await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
+    const pin = page.locator(".hs-pin");
     await expect
-      .poll(() => page.locator(".hs-pin").evaluate((el) => el.getBoundingClientRect().top))
-      .toBeLessThan(0);
+      .poll(() => pin.evaluate((el) => Math.round(el.getBoundingClientRect().top)))
+      .toBe(0);
+    await page.evaluate(() => window.scrollTo(0, innerHeight * 4));
+    await expect(page.locator(".hs-cat")).toBeVisible();
+    // Fur faded instead of flying: no transform was ever applied to a strand.
+    const transforms = await page
+      .locator(".hs-strand")
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).transform));
+    expect(transforms.every((t) => t === "none" || t === "matrix(1, 0, 0, 1, 0, 0)")).toBe(true);
   });
 });

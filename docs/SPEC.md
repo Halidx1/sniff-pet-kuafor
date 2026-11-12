@@ -166,7 +166,7 @@ Avoid colors beyond these tokens. Check that all text/background combinations me
 
 Friendly and welcoming; professional and trustworthy; modern and slightly playful; premium but approachable; pet-oriented without looking childish; clean, with generous whitespace.
 
-Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, ADR-025), which falls back to a static picture. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
+Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, ADR-025), which has a gentle version for reduced motion. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
 
 Build a small, reusable component set once (Button, Card, SectionHeading, Badge, etc.) and use it everywhere.
 
@@ -219,7 +219,7 @@ A **scroll-driven grooming story** (ADR-025, added after the M2 review). Art dir
 
 - The texts are real HTML, visible on the first screen without scrolling.
 - Native scrolling only; nothing is hijacked.
-- With `prefers-reduced-motion`, the story is a static picture of the groomed pets.
+- With `prefers-reduced-motion` (e.g. Windows "Animation effects" off, a common default), the story plays in a **gentle version**: the same chapters, but things fade and lines draw instead of flying, sliding or zooming, and smooth scrolling is off.
 
 Texts:
 - Headline: **"Küçük Dostlarınız, Büyük Bir Özeni Hak Ediyor!"**
