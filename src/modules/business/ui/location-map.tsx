@@ -12,5 +12,12 @@ export function LocationMap({
 }) {
   const position = { latitude: profile.latitude, longitude: profile.longitude };
   if (!hasLocation(position)) return null;
-  return <ShopMap {...position} mapsUrl={profile.maps_url} className={className} />;
+  return (
+    <ShopMap
+      {...position}
+      name={profile.business_name}
+      mapsUrl={profile.maps_url}
+      className={className}
+    />
+  );
 }

@@ -1,5 +1,5 @@
 import { CalendarCheck, Heart, MapPin, PawPrint } from "lucide-react";
-import { getBusinessProfile, LocationMap } from "@/modules/business";
+import { DirectionsLink, getBusinessProfile, LocationMap } from "@/modules/business";
 import { getPublishedServices, ServiceList } from "@/modules/catalog";
 import { getSiteTexts } from "@/modules/content";
 import { getPublishedMedia, MediaImage } from "@/modules/media";
@@ -207,11 +207,15 @@ export default async function HomePage() {
               <MapPin className="mt-1 size-5 shrink-0" aria-hidden="true" />
               {profile.address}
             </p>
-            {profile.maps_url && (
-              <ButtonLink href={profile.maps_url} className="mt-8">
-                Yol Tarifi Al
-              </ButtonLink>
-            )}
+            <DirectionsLink
+              place={{
+                name: profile.business_name,
+                latitude: profile.latitude,
+                longitude: profile.longitude,
+                mapsUrl: profile.maps_url,
+              }}
+              className="mt-8"
+            />
           </div>
           <LocationMap profile={profile} />
         </div>

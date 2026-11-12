@@ -2,12 +2,12 @@ import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import {
   ContactChannels,
+  DirectionsLink,
   getBusinessProfile,
   getOpeningHours,
   LocationMap,
   OpeningHours,
 } from "@/modules/business";
-import { ButtonLink } from "@/shared/ui/button";
 import { Container } from "@/shared/ui/container";
 import { PageHeader } from "@/shared/ui/section";
 
@@ -31,11 +31,15 @@ export default async function ContactPage() {
               <MapPin className="mt-1 size-5 shrink-0" aria-hidden="true" />
               {profile.address}
             </p>
-            {profile.maps_url && (
-              <ButtonLink href={profile.maps_url} className="mt-6">
-                Yol Tarifi Al
-              </ButtonLink>
-            )}
+            <DirectionsLink
+              place={{
+                name: profile.business_name,
+                latitude: profile.latitude,
+                longitude: profile.longitude,
+                mapsUrl: profile.maps_url,
+              }}
+              className="mt-6"
+            />
           </section>
           <section aria-labelledby="channels-heading">
             <h2 id="channels-heading" className="text-2xl font-extrabold tracking-tight">

@@ -2,6 +2,7 @@
 // stay out of the first page load. Client-only: it touches the DOM and WebGL.
 import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { Platform } from "../domain/directions";
 import { MAP_STYLE_URL, prepareMapStyle, type MapStyle } from "../domain/map-style";
 
 /** Copied from node_modules by scripts/copy-maplibre-worker.mjs before dev and build. */
@@ -34,17 +35,44 @@ const PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 60" wid
   </g>
 </svg>`;
 
-function pinElement(): HTMLElement {
-  const wrapper = document.createElement("div");
-  const svg = new DOMParser().parseFromString(PIN_SVG, "image/svg+xml").documentElement;
-  wrapper.append(document.importNode(svg, true));
-  return wrapper;
+export type Directions = { url: string | null; platform: Platform };
+
+/** Opens directions: the maps app on phones (same tab), Google Maps in a new tab on desktop. */
+function openDirections({ url, platform }: Directions) {
+  if (!url) return;
+  if (platform === "desktop") window.open(url, "_blank", "noopener");
+  else window.location.href = url;
 }
 
-/** Draws the map with one pin; returns a cleanup function. Throws if the style can't load. */
+/** The pin is a real link, so it also works with the keyboard and screen readers. */
+function pinElement(directions: () => Directions): HTMLElement {
+  const link = document.createElement("a");
+  link.href = directions().url ?? "#";
+  link.setAttribute("aria-label", "Sniff Pet Kuaför'e yol tarifi al");
+  link.style.cursor = "pointer";
+  // The device-specific link is known only after the page loads: refresh it on hover/focus.
+  const refresh = () => (link.href = directions().url ?? "#");
+  link.addEventListener("pointerenter", refresh);
+  link.addEventListener("focus", refresh);
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation(); // don't also trigger the map's own click
+    openDirections(directions());
+  });
+  const svg = new DOMParser().parseFromString(PIN_SVG, "image/svg+xml").documentElement;
+  link.append(document.importNode(svg, true));
+  return link;
+}
+
+/**
+ * Draws the map with one pin; returns a cleanup function. Throws if the style can't load.
+ * A tap or click on the map or the pin opens directions (`directions` is read at click
+ * time, because the device-specific link is only known after the page has loaded).
+ */
 export async function mountShopMap(
   container: HTMLElement,
   { latitude, longitude }: { latitude: number; longitude: number },
+  directions: () => Directions,
 ): Promise<() => void> {
   const response = await fetch(MAP_STYLE_URL);
   if (!response.ok) throw new Error(`map style: HTTP ${response.status}`);
@@ -71,7 +99,18 @@ export async function mountShopMap(
   });
   map.touchZoomRotate.disableRotation();
   map.addControl(new NavigationControl({ showCompass: false }), "top-right");
-  new Marker({ element: pinElement(), anchor: "bottom" }).setLngLat(center).addTo(map);
+  const marker = new Marker({ element: pinElement(directions), anchor: "bottom" });
+  marker.setLngLat(center).addTo(map);
+
+  // MapLibre fires "click" only for a tap/click, not at the end of a drag or a zoom.
+  map.on("click", () => openDirections(directions()));
+  map.getCanvas().style.cursor = "pointer";
+
+  // The compact attribution ("i") starts expanded; collapse it so the map is clean.
+  // The licence text stays one tap away behind the "i" button.
+  map.once("load", () =>
+    container.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show"),
+  );
 
   return () => map.remove();
 }
