@@ -560,18 +560,21 @@ The owner can delete or shorten a closure; those times become bookable again at 
 
 #### M2 review changes (added 2026-11-12)
 
-Found by the developer while reviewing the M2 deploy preview; built on the same branch and PR.
+Found by the developer while reviewing the M2 deploy preview (PR #59). Status at the end of 2026-11-12:
 
-- **Build:**
-  - Map shows only the shop: MapLibre + OpenFreeMap, coordinates in `business_profile` (ADR-020)
-  - The 404 "BLOCKED" bar was Netlify's deploy-preview Drawer (an iframe it injects on every preview page, blocked by our CSP), not our code. It is turned off in the Netlify UI. E2E now checks that the 404 keeps the security headers
-  - Third colour: oat (ADR-021) and sky blue (ADR-023) were tried on the preview and rejected; the original white and neutral-bg stay (ADR-024)
-  - Homepage scroll story (dog brushed and trimmed, then a cat brushed) + paw trail for the welcome text and "why us" points: the first CSS-only version (ADR-022) was rejected in review; redesigned with hand-drawn doodles, GSAP ScrollTrigger and Lenis (ADR-025, issue #64)
+- **Done and merged:**
+  - #65 — map shows only the shop: MapLibre + OpenFreeMap, coordinates in `business_profile` plus a backfill migration (the CLI doesn't re-run a changed seed) (ADR-020); the 404 "BLOCKED" bar was Netlify's deploy-preview Drawer, now turned off in the Netlify UI, and E2E checks the 404 keeps its security headers; palette unchanged after trying oat (ADR-021) and sky blue (ADR-023) → original white/neutral-bg (ADR-024)
+  - #68 — the map's licence info starts collapsed; a tap on the map, the pin or "Yol Tarifi Al" opens directions (Apple Maps on iOS, `geo:` on Android, the Google listing on desktop) (#67)
+- **Open — PR #66 (draft), homepage story (#64, ADR-025):** the first CSS-only story (ADR-022) was rejected; redesigned with hand-drawn doodles (rough.js generator, dev-only), GSAP ScrollTrigger and Lenis. Pinned chapters: brush → snip → cat → happy. Reduced motion gets a gentle version (fades instead of motion; Windows "Animation effects" off triggers it); an "Animasyonu tam hızda oynat" button switches to the full version (restarts from the top, remembered on the device). The developer approved this version on 2026-11-12; not merged yet.
+- **Next:**
+  - #66: paw trail (welcome text + "why us" in doodle paws, hero photo as a taped sticker), site-wide touches (paper grain, torn edges, hand-drawn heading underlines), Lighthouse ≥ 0.9 on `/`
+  - Gallery PR: the shop's Instagram photos replace the Unsplash demo photos (visible, `is_demo`), grouped per post (Önce | Sonra card per pet, one carousel card for the clothes post, symmetric grid); needs a `media` grouping column (additive migration). Owner confirms the photos and the story captions in #54
 - **Test:**
-  - [ ] The map shows one paw pin and no other businesses; two fingers pan it on a phone
-  - [ ] A made-up URL on the preview shows the 404 without a bar (Drawer off, private window)
-  - [ ] No white surfaces left; axe still reports zero contrast violations
-  - [ ] Lighthouse ≥ 90 on `/` with the map
+  - [x] The map shows one paw pin and no other businesses; two fingers pan it on a phone
+  - [x] A made-up URL on the preview shows the 404 without a bar (Drawer off)
+  - [x] Map taps open directions on phone and desktop
+  - [x] Story: full version (normal motion), gentle version (reduced motion), button switch — approved on the preview
+  - [ ] Lighthouse ≥ 0.9 on `/` with the story and the map
 
 ### M3 — Admin content management (Must)
 
