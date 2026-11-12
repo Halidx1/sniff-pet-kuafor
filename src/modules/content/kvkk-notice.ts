@@ -4,7 +4,7 @@
 // the owner, ideally with legal advice (SPEC §16). Uses the Markdown subset.
 
 export const KVKK_NOTICE = {
-  version: "2026-11-taslak-2",
+  version: "2026-11-taslak-1",
   markdown: `**Bu metin bir taslaktır.** İşletme sahibi tarafından, tercihen bir hukuk danışmanıyla birlikte gözden geçirilip tamamlanmadan önce bağlayıcı değildir. Köşeli parantez içindeki bilgiler henüz doldurulmamıştır.
 
 ## Veri sorumlusu
@@ -20,8 +20,8 @@ Siteyi ziyaret ettiğinizde, sitenin barındırıldığı hizmet sağlayıcılar
 ## Üçüncü taraf hizmetler
 
 - **Netlify** (site barındırma) ve **Supabase** (veritabanı ve görseller; Avrupa Birliği'ndeki sunucular) teknik kayıt tutabilir.
-- **OpenFreeMap:** Konum haritasının görüntüleri OpenFreeMap sunucularından yüklenir; harita görüntülendiğinde bu sunucular teknik kayıt (IP adresi gibi) tutabilir. Harita çerez kullanmaz.
-- **Instagram, WhatsApp ve Google Haritalar** ("Yol Tarifi Al") bağlantıları, ilgili platformların kendi gizlilik politikalarına tabidir.
+- **Google Haritalar:** Konum haritası Google tarafından sağlanır; harita yüklendiğinde Google kendi gizlilik politikası çerçevesinde veri işleyebilir.
+- **Instagram ve WhatsApp** bağlantıları, ilgili platformların kendi gizlilik politikalarına tabidir.
 
 Bu hizmet sağlayıcıların bir kısmının sunucuları yurt dışında bulunmaktadır. Yurt dışına veri aktarımı hususu [HUKUKİ DEĞERLENDİRME SONRASI DOLDURULACAK].
 

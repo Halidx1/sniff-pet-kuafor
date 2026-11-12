@@ -27,10 +27,3 @@ Gallery and About photos stay unpublished: on those pages a stock photo could be
 |---|---|---|
 | `sources/images/brushing.jpg`, `feeding.jpg`, `nailing.jpg` | Instagram preview tiles only (demo, published) | Posts from the shop's Instagram. Original source unknown; they may be AI-generated. Never used as hero or gallery photos (SPEC §6). |
 | `public/brand/logo-interim.png` | Logo | Extracted from `sources/images/logo_+_coming_soon.png` by `scripts/extract-logo.py` until the original file arrives. |
-
-## Map and illustrations
-
-| What | Source | Licence |
-|---|---|---|
-| Map tiles and style ("positron") on the homepage and `/iletisim` | [OpenFreeMap](https://openfreemap.org), [OpenMapTiles](https://openmaptiles.org), data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) | Free, commercial use allowed; ODbL data. The attribution is shown on the map itself (ADR-020). |
-| Map pin, grooming-story dog, cat, brush and scissors | Drawn as inline SVG for this site in the brand colours | Original work in this repository. Not photos, not AI images, not the logo. |

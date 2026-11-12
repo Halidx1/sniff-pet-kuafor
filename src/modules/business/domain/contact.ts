@@ -2,6 +2,14 @@
 
 export const WHATSAPP_GREETING = "Merhaba, Sniff Pet Kuaför hakkında bilgi almak istiyorum.";
 
+/** The stored embed URL, or a key-less Google Maps embed built from the address. */
+export function mapEmbedUrl(profile: { map_embed_url: string | null; address: string }): string {
+  return (
+    profile.map_embed_url ??
+    `https://www.google.com/maps?q=${encodeURIComponent(profile.address)}&output=embed`
+  );
+}
+
 const WEEKDAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
 
 /** "09:00:00" → "09:00" */

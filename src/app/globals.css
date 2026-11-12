@@ -5,9 +5,9 @@
   --color-*: initial;
   --color-navy: #07152b;
   --color-cream: #f5e1ce;
+  --color-white: #ffffff;
   --color-beige: #e9d8c6;
-  --color-oat: #ede3d6; /* page bands and background (ADR-021) */
-  --color-oat-light: #f3ece2; /* cards and forms */
+  --color-neutral-bg: #faf6f1;
   --color-muted-text: #66625e; /* never on beige */
   --color-caramel: #c98a4b; /* accent fills only; text on it is navy */
   --color-danger: #a63d2a; /* errors and destructive actions only */
@@ -21,7 +21,7 @@
 
 @layer base {
   body {
-    @apply bg-oat font-sans text-navy antialiased;
+    @apply bg-neutral-bg font-sans text-navy antialiased;
   }
 
   h1,
@@ -68,7 +68,7 @@
     mask-repeat: no-repeat;
   }
   .lightbox-btn {
-    @apply inline-flex size-12 items-center justify-center rounded-full bg-cream text-navy hover:bg-oat-light;
+    @apply inline-flex size-12 items-center justify-center rounded-full bg-cream text-navy hover:bg-white;
   }
 }
 
