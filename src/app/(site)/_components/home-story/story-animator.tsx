@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
+import { useMotionChoice } from "../motion-choice";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -24,6 +25,8 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  */
 export function StoryAnimator({ children }: { children: React.ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
+  // The visitor can ask for the full animation despite reduced motion (MotionToggle).
+  const choice = useMotionChoice();
 
   useGSAP(
     () => {
@@ -38,7 +41,7 @@ export function StoryAnimator({ children }: { children: React.ReactNode }) {
         },
         (ctx) => {
           const { motion, desktop } = ctx.conditions as { motion: boolean; desktop: boolean };
-          const gentle = !motion;
+          const gentle = !motion && choice !== "full";
           const q = gsap.utils.selector(root);
           /** The single element matching `sel` inside the story (the markup is ours). */
           const one = (sel: string) => q(sel)[0] as HTMLElement;
@@ -300,7 +303,7 @@ export function StoryAnimator({ children }: { children: React.ReactNode }) {
       );
       return () => mm.revert();
     },
-    { scope: root },
+    { scope: root, dependencies: [choice], revertOnUpdate: true },
   );
 
   return (

@@ -142,6 +142,31 @@
   opacity: 0.6;
 }
 
+/* ---------- "Play the full animation" (reduced motion only) ---------- */
+
+.hs-motion-toggle {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-motion-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    margin-top: 1.25rem;
+    padding: 0.4rem 1rem;
+    border: 2px dashed var(--color-navy);
+    border-radius: 999px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+  .hs-motion-toggle:hover {
+    background: var(--color-beige);
+  }
+}
+
 /* ---------- Starting picture (both versions) ---------- */
 
 .hs-cat,

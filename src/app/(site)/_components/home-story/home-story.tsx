@@ -1,6 +1,7 @@
 import { ButtonLink } from "@/shared/ui/button";
 import { Doodle } from "../doodles/doodle";
 import { doodles } from "../doodles/doodles.data";
+import { MotionToggle } from "./motion-toggle";
 import { StoryAnimator } from "./story-animator";
 import { StoryScene } from "./story-scene";
 import "./home-story.css";
@@ -53,6 +54,7 @@ export function HomeStory({ texts }: { texts: HeroTexts }) {
                 Hizmetlerimizi Keşfet
               </ButtonLink>
             </div>
+            <MotionToggle />
           </div>
 
           <div className="hs-stage">

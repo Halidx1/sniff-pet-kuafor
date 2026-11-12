@@ -175,6 +175,8 @@ test("gallery filters by pet and browses photos in a lightbox", async ({ page })
 // The hand-drawn grooming story (ADR-025).
 test("hero texts and buttons are on the first screen", async ({ page }) => {
   await page.goto("/");
+  // With normal motion settings there is nothing to switch on.
+  await expect(page.locator(".hs-motion-toggle")).toBeHidden();
   await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
   await expect(page.getByRole("link", { name: "Hemen Randevu Al" })).toBeInViewport();
   await expect(page.locator(".hs-scene")).toHaveAttribute("aria-hidden", "true");
@@ -200,6 +202,28 @@ test("scrolling plays the story: the hero pins and the chapters change", async (
 
 test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
+
+  test("a button plays the full animation, and the choice is remembered", async ({ page }) => {
+    await page.goto("/");
+    const play = page.getByRole("button", { name: "Animasyonu tam hızda oynat" });
+    await expect(play).toBeVisible();
+    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    await play.click();
+    await expect(page.getByRole("button", { name: "Sade animasyona dön" })).toBeVisible();
+    // Full version: the dog's fur flies off (strands get a transform).
+    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    await page.evaluate(() => window.scrollTo(0, innerHeight * 1.6));
+    await expect
+      .poll(() =>
+        page
+          .locator(".hs-strand")
+          .first()
+          .evaluate((el) => getComputedStyle(el).transform),
+      )
+      .not.toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Sade animasyona dön" })).toBeVisible();
+  });
 
   test("the story plays gently: it pins and reaches the cat, but nothing flies", async ({
     page,
