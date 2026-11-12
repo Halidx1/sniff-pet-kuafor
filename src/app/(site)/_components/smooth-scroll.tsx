@@ -5,7 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { useEffect } from "react";
-import { useMotionChoice } from "./motion-choice";
+import { applyMotionChoice, useMotionChoice } from "./motion-choice";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,6 +18,8 @@ gsap.registerPlugin(ScrollTrigger);
  */
 export function SmoothScroll() {
   const choice = useMotionChoice();
+  // Also covers a reload with "full" remembered: the marker is set once the page runs.
+  useEffect(() => applyMotionChoice(choice), [choice]);
   useEffect(() => {
     if (choice !== "full" && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({ lerp: 0.12, anchors: true });

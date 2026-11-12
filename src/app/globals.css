@@ -72,13 +72,17 @@
   }
 }
 
+/* Reduced motion: CSS animations end at once. Not when the visitor pressed
+   "Animasyonu tam hızda oynat" (html[data-motion="full"], ADR-025). */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
+  :root:not([data-motion="full"]) *,
+  :root:not([data-motion="full"]) *::before,
+  :root:not([data-motion="full"]) *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important; /* or delayed items stay hidden until they "start" */
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }

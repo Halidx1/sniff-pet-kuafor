@@ -28,7 +28,7 @@ const TILTS = [-4, 3, -2, 4, -3, 2, -1, 3];
 export function HomeStory({ texts }: { texts: HeroTexts }) {
   const words = texts.hero_title.split(/\s+/).filter(Boolean);
   return (
-    <section aria-labelledby="hero-heading" className="hs">
+    <section aria-labelledby="hero-heading" className="hs hs-play">
       <StoryAnimator>
         <div className="hs-pin">
           <div className="hs-copy">
