@@ -16,7 +16,7 @@ export function PriceList({ services, addons }: { services: Service[]; addons: A
         <section
           key={service.id}
           aria-labelledby={`price-${service.id}`}
-          className="rounded-3xl bg-oat-light p-6"
+          className="rounded-3xl bg-white p-6"
         >
           <h2 id={`price-${service.id}`} className="text-xl font-extrabold">
             {service.name}

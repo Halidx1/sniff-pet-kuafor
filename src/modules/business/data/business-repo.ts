@@ -11,7 +11,7 @@ export async function getBusinessProfile() {
   const { data, error } = await publicClient()
     .from("business_profile")
     .select(
-      "business_name, slogan, address, maps_url, latitude, longitude, instagram_url, phone_e164, whatsapp_e164, email",
+      "business_name, slogan, address, maps_url, map_embed_url, instagram_url, phone_e164, whatsapp_e164, email",
     )
     .single();
   if (error) throw new Error(`business_profile: ${error.message}`);

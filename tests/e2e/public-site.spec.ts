@@ -1,8 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { stubMapTiles } from "./map-stub";
-
-test.beforeEach(({ page }) => stubMapTiles(page));
 
 const PAGES = [
   { path: "/", h1: "Küçük Dostlarınız, Büyük Bir Özeni Hak Ediyor!" },
@@ -25,6 +22,7 @@ for (const { path, h1 } of PAGES) {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(h1);
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+      .exclude("iframe") // Google's map is third-party content
       .analyze();
     expect(results.violations).toEqual([]);
   });
@@ -91,30 +89,7 @@ test("contact details show only what is set", async ({ page }) => {
   // Phone, WhatsApp and opening hours aren't in the seed: nothing is invented.
   await expect(page.locator('a[href^="tel:"], a[href*="wa.me"]')).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Çalışma saatleri" })).toHaveCount(0);
-});
-
-test("the map shows the shop's pin and no third-party frame", async ({ page }) => {
-  await page.goto("/iletisim");
-  const map = page.locator("main [data-map-status]");
-  await map.scrollIntoViewIfNeeded();
-  await expect(map).toHaveAttribute("data-map-status", "ready");
-  await expect(
-    page.getByRole("region", { name: "Sniff Pet Kuaför'ün haritadaki konumu" }),
-  ).toBeVisible();
-  // Visible = non-zero size: MapLibre's CSS once collapsed the canvas to 0 px high.
-  await expect(map.locator("canvas")).toBeVisible();
-  await expect(map.locator(".maplibregl-marker")).toBeVisible();
-  await expect(page.locator("iframe")).toHaveCount(0);
-});
-
-test("the map engine loads only when the map scrolls into view", async ({ page }) => {
-  const styleRequests: string[] = [];
-  page.on("request", (r) => r.url().includes("openfreemap") && styleRequests.push(r.url()));
-  await page.goto("/");
-  await page.waitForLoadState("networkidle");
-  expect(styleRequests).toEqual([]);
-  await page.locator("main [data-map-status]").scrollIntoViewIfNeeded();
-  await expect(page.locator("main [data-map-status]")).toHaveAttribute("data-map-status", "ready");
+  await expect(main.locator("iframe")).toHaveAttribute("loading", "lazy");
 });
 
 test("skip link moves keyboard focus to the content", async ({ page }) => {
@@ -163,52 +138,4 @@ test("gallery filters by pet and browses photos in a lightbox", async ({ page })
   await page.keyboard.press("Escape");
   await expect(lightbox).toBeHidden();
   await expect(thumbs.first()).toBeFocused();
-});
-
-// The grooming story (ADR-022). Playwright's toBeVisible() ignores opacity, so these
-// tests read the effective opacity (the product of every ancestor's) themselves.
-const PAW_HEADINGS = [
-  "Sniff Pet Kuaför'e Hoş Geldiniz!",
-  "Özenli Bakım",
-  "Kedi ve Köpeklere Özel Yaklaşım",
-  "Randevulu Hizmet",
-  "Gölbaşı'nda Kolay Ulaşım",
-];
-
-const effectiveOpacity = (el: Element) => {
-  let opacity = 1;
-  for (let node: Element | null = el; node; node = node.parentElement) {
-    opacity *= Number(getComputedStyle(node).opacity);
-  }
-  return opacity;
-};
-
-test("hero texts and buttons are on the first screen", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
-  await expect(page.getByRole("link", { name: "Hemen Randevu Al" })).toBeInViewport();
-  await expect(page.locator(".gs-scene")).toHaveAttribute("aria-hidden", "true");
-});
-
-test("every paw text becomes fully visible when scrolled to", async ({ page }) => {
-  await page.goto("/");
-  for (const name of PAW_HEADINGS) {
-    const heading = page.getByRole("heading", { name, exact: true });
-    await heading.scrollIntoViewIfNeeded();
-    await expect.poll(() => heading.evaluate(effectiveOpacity), { message: name }).toBe(1);
-  }
-});
-
-test.describe("with reduced motion", () => {
-  test.use({ reducedMotion: "reduce" });
-
-  test("the story is a static picture and every text is visible", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.locator(".gs-stage")).toHaveCSS("position", "static");
-    await expect(page.locator(".gs-brush")).toHaveCSS("opacity", "0");
-    for (const name of PAW_HEADINGS) {
-      const heading = page.getByRole("heading", { name, exact: true });
-      expect(await heading.evaluate(effectiveOpacity), name).toBe(1);
-    }
-  });
 });

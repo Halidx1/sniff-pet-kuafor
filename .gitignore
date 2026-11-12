@@ -36,7 +36,4 @@ npm-debug.log*
 # Developer-only milestone to-do lists (kept local)
 docs/milestones/
 lighthouse-report/
-
-# Copied from node_modules before dev/build (scripts/copy-maplibre-worker.mjs)
-public/vendor/
 .lighthouseci/
