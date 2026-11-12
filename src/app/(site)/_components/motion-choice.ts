@@ -19,7 +19,17 @@ function read(): MotionChoice {
   }
 }
 
+/**
+ * Marks <html data-motion="full"> so CSS treats the page like normal motion: the global
+ * reduced-motion rule in globals.css steps aside and page-load animations run.
+ */
+export function applyMotionChoice(choice: MotionChoice) {
+  if (choice === "full") document.documentElement.dataset.motion = "full";
+  else delete document.documentElement.dataset.motion;
+}
+
 export function setMotionChoice(choice: MotionChoice) {
+  applyMotionChoice(choice);
   try {
     if (choice === "full") localStorage.setItem(KEY, "full");
     else localStorage.removeItem(KEY);
