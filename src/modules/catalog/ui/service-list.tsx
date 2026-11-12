@@ -33,7 +33,7 @@ export async function ServiceList({
               const image = images.find((m) => m.id === service.image_id);
               const rows = tierRows(service.service_prices);
               return (
-                <li key={service.id} className="flex flex-col overflow-hidden rounded-3xl bg-white">
+                <li key={service.id} className="flex flex-col overflow-hidden rounded-3xl bg-oat-light">
                   {image && (
                     <MediaImage
                       image={image}

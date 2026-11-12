@@ -28,7 +28,7 @@ export function MobileMenu() {
         ref={dialog}
         aria-label="Menü"
         onClick={(e) => e.target === dialog.current && dialog.current.close()}
-        className="ms-auto me-0 h-dvh max-h-dvh w-[min(85vw,22rem)] bg-neutral-bg p-6 text-navy backdrop:bg-navy/60"
+        className="ms-auto me-0 h-dvh max-h-dvh w-[min(85vw,22rem)] bg-oat p-6 text-navy backdrop:bg-navy/60"
       >
         <div className="flex justify-end">
           <button
