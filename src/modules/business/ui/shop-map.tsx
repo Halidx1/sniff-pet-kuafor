@@ -57,7 +57,11 @@ export function ShopMap({ latitude, longitude, mapsUrl, className = "" }: Props)
       className={`relative isolate aspect-[4/3] w-full overflow-hidden rounded-3xl bg-beige ${className}`}
       data-map-status={status}
     >
-      <div ref={containerRef} className="absolute inset-0" />
+      {/* MapLibre's CSS sets position: relative on the element it mounts in, which would
+          override absolute positioning; so it mounts in a full-size child of the absolute box. */}
+      <div className="absolute inset-0">
+        <div ref={containerRef} className="size-full" />
+      </div>
       {status !== "ready" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
           <MapPin className="size-10" aria-hidden="true" />

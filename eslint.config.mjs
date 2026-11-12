@@ -71,6 +71,7 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
     "test-results/**",
     "supabase/.temp/**",
+    "public/vendor/**", // MapLibre worker copied from node_modules (ADR-020)
   ]),
 ]);
 
