@@ -82,7 +82,8 @@ export function StoryAnimator({ children }: { children: React.ReactNode }) {
             scrollTrigger: {
               trigger: pin,
               start: "top top",
-              end: () => `+=${innerHeight * (desktop ? 4.2 : 3.6)}`,
+              // Scroll distance per story: longer = slower. Phones were 20 % too fast at 3.6.
+              end: () => `+=${innerHeight * (desktop ? 4.2 : 4.5)}`,
               pin: true,
               scrub: gentle ? true : 0.8,
               invalidateOnRefresh: true,
