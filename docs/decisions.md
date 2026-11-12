@@ -32,9 +32,10 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [018](#adr-018-caching-model-cache-components) | Caching model: Cache Components | Accepted (verified on Netlify 2026-11-11) |
 | [019](#adr-019-work-tracking-on-github-and-release-merges) | Work tracking on GitHub and release merges | Accepted |
 | [020](#adr-020-a-clean-map-maplibre-and-openfreemap) | A clean map: MapLibre and OpenFreeMap | Accepted |
-| [021](#adr-021-warm-oat-replaces-white-backgrounds) | Warm oat replaces white backgrounds | Superseded by ADR-023 |
+| [021](#adr-021-warm-oat-replaces-white-backgrounds) | Warm oat replaces white backgrounds | Superseded by ADR-024 |
 | [022](#adr-022-scroll-driven-homepage-story-with-css-only) | Scroll-driven homepage story with CSS only | Superseded (rejected in review) |
-| [023](#adr-023-sky-blue-replaces-oat) | Sky blue replaces oat | Accepted |
+| [023](#adr-023-sky-blue-replaces-oat) | Sky blue replaces oat | Superseded by ADR-024 |
+| [024](#adr-024-keep-the-original-white-and-neutral-bg) | Keep the original white and neutral-bg | Accepted |
 
 ---
 
@@ -583,7 +584,7 @@ The gate passed; no fallback is needed.
 ## ADR-021: Warm oat replaces white backgrounds
 
 - **Date:** 2026-11-12
-- **Status:** Superseded by ADR-023 (oat was too close to the logo's cream). Amended ADR-014.
+- **Status:** Superseded by ADR-023, then ADR-024 (oat was too close to the logo's cream). Amended ADR-014.
 
 **Context.** In the M2 review the developer found the white cards (`#FFFFFF`) and near-white page bands (`neutral-bg #FAF6F1`) too stark next to the logo's navy and cream, and asked for a matching third colour instead of white.
 
@@ -625,7 +626,7 @@ The gate passed; no fallback is needed.
 ## ADR-023: Sky blue replaces oat
 
 - **Date:** 2026-11-12
-- **Status:** Accepted. Supersedes ADR-021; amends ADR-014.
+- **Status:** Superseded by ADR-024 (the developer preferred the original whites). Superseded ADR-021.
 
 **Context.**
 - On the deploy preview the developer found oat (`#EDE3D6`) too close to the logo's cream (`#F5E1CE`): bands and headers blurred together.
@@ -642,4 +643,19 @@ The gate passed; no fallback is needed.
 **Consequences.**
 - Warm cream (headers, hero) and cool sky (bands) now alternate visibly.
 - The token names changed (`bg-oat` → `bg-sky`), so a leftover old class renders no colour and is easy to spot.
+
+---
+
+## ADR-024: Keep the original white and neutral-bg
+
+- **Date:** 2026-11-12
+- **Status:** Accepted. Supersedes ADR-021 and ADR-023; ADR-014's palette stands.
+
+**Context.** In the M2 review the developer first found white too stark next to the logo and tried two replacements on the deploy preview: warm oat (ADR-021), too close to the logo's cream, then sky blue (ADR-023), which they didn't like either. Seeing all three, they preferred the original.
+
+**Decision.** Keep `white` `#FFFFFF` (cards, forms) and `neutral-bg` `#FAF6F1` (page background) from ADR-014. The `oat`/`sky` tokens are removed; the map background follows `neutral-bg`.
+
+**Alternatives considered.** Oat (ADR-021), sky blue (ADR-023), mist blue and sage, all compared on the real pages.
+
+**Consequences.** No palette change ships from the M2 review. The warmth and character the developer was missing come from the homepage art direction instead (hand-drawn story, separate PR).
 

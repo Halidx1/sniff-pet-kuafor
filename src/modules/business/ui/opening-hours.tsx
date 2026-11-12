@@ -10,7 +10,7 @@ export function OpeningHours({ rows }: { rows: OpeningHour[] }) {
       <h2 id="hours-heading" className="text-2xl font-extrabold tracking-tight">
         Çalışma saatleri
       </h2>
-      <dl className="mt-4 divide-y divide-beige rounded-2xl bg-sky-light px-5">
+      <dl className="mt-4 divide-y divide-beige rounded-2xl bg-white px-5">
         {week.map(({ day, hours }) => (
           <div key={day} className="flex justify-between gap-4 py-3">
             <dt className="font-semibold">{day}</dt>

@@ -6,7 +6,7 @@ import { NavLinks } from "./nav-links";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-beige/70 bg-sky/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-beige/70 bg-neutral-bg/95 backdrop-blur">
       <Container className="flex h-16 items-center justify-between gap-4 sm:h-20">
         <Link href="/" className="shrink-0 rounded-lg" aria-label="Sniff Pet Kuaför, anasayfa">
           {/* unoptimized: the logo is served as-is (ADR-008); never resized out of proportion */}
@@ -38,7 +38,7 @@ export function SiteHeader() {
 /** Always-reachable appointment button on phones (SPEC §7). */
 export function MobileAppointmentBar() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-beige bg-sky/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-beige bg-neutral-bg/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:hidden">
       <Link
         href="/randevu-al"
         className="flex min-h-12 items-center justify-center rounded-full bg-navy font-heading font-bold text-cream"

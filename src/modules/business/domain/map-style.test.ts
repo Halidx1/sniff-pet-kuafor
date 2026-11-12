@@ -52,7 +52,7 @@ describe("prepareMapStyle", () => {
   it("recolours the background only when asked", () => {
     const bg = (s: MapStyle) => s.layers[0]?.paint?.["background-color"];
     expect(bg(prepareMapStyle(style))).toBe("#fff");
-    expect(bg(prepareMapStyle(style, { background: "#ebf1f7" }))).toBe("#ebf1f7");
+    expect(bg(prepareMapStyle(style, { background: "#faf6f1" }))).toBe("#faf6f1");
   });
 
   it("does not change the input style", () => {

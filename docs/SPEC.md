@@ -147,10 +147,10 @@ The design must closely follow the logo: a deep navy illustration on a warm crea
 |---|---|---|
 | navy | `#07152B` | Navigation, typography, buttons, important elements |
 | cream | `#F5E1CE` | Hero sections, backgrounds, decorative shapes, brand highlights |
-| sky | `#D6E1EC` | Page background and plain sections: a light tint of the logo navy. Replaced white (stark) and then oat (too close to cream) (ADR-021, ADR-023). |
-| sky-light | `#EBF1F7` | Content cards, service cards, forms |
+| white | `#FFFFFF` | Content cards, service sections, forms |
+| neutral-bg | `#FAF6F1` | Soft page background. Oat and sky blue were tried in the M2 review and rejected; the original whites stay (ADR-024). |
 | beige | `#E9D8C6` | Secondary warm accents |
-| muted-text | `#66625E` | Subtle supporting text. Darkened from `#77736F`, which failed WCAG AA on cream (3.7:1). 4.56:1 on sky, 5.31:1 on sky-light. Not used on beige. |
+| muted-text | `#66625E` | Subtle supporting text. Darkened from `#77736F`, which failed WCAG AA on cream (3.7:1). 5.62:1 on neutral-bg, 6.05:1 on white. Not used on beige. |
 | caramel | `#C98A4B` | Accent: badges, paw accents, decorative shapes, highlights. Text on it is always navy. Never used as a text colour on light backgrounds. |
 | danger | `#A63D2A` | Error messages and destructive buttons only. Success uses navy + a ✓ icon. |
 
