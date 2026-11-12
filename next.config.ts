@@ -8,7 +8,8 @@ const indexable = process.env.SITE_INDEXABLE === "true";
 // Baseline CSP for the public site. Static/prerendered pages can't carry per-request nonces, so inline
 // scripts are allowed here; /admin gets a strict nonce-based CSP from proxy.ts in M3 (ADR-006).
 // Turnstile is added in M3.
-// Images come from our own Supabase project only (ADR-008/009); the map is a Google Maps iframe.
+// Images come from our own Supabase project only (ADR-008/009). The map (ADR-020) fetches its
+// style, tiles and fonts from OpenFreeMap and runs MapLibre's worker from /vendor (same origin).
 const supabaseOrigin = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : "";
 
 const csp = [
@@ -16,9 +17,10 @@ const csp = [
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${supabaseOrigin}`.trim(),
-  "frame-src https://www.google.com",
+  "frame-src 'none'",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://tiles.openfreemap.org",
+  "worker-src 'self'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

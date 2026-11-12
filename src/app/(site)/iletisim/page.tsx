@@ -4,7 +4,7 @@ import {
   ContactChannels,
   getBusinessProfile,
   getOpeningHours,
-  MapEmbed,
+  LocationMap,
   OpeningHours,
 } from "@/modules/business";
 import { ButtonLink } from "@/shared/ui/button";
@@ -45,7 +45,7 @@ export default async function ContactPage() {
           </section>
           <OpeningHours rows={hours} />
         </div>
-        <MapEmbed profile={profile} />
+        <LocationMap profile={profile} />
       </Container>
     </>
   );

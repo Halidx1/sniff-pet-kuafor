@@ -60,6 +60,8 @@ export type Database = {
           email: string | null;
           id: boolean;
           instagram_url: string | null;
+          latitude: number | null;
+          longitude: number | null;
           map_embed_url: string | null;
           maps_url: string | null;
           phone_e164: string | null;
@@ -76,6 +78,8 @@ export type Database = {
           email?: string | null;
           id?: boolean;
           instagram_url?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
           map_embed_url?: string | null;
           maps_url?: string | null;
           phone_e164?: string | null;
@@ -91,6 +95,8 @@ export type Database = {
           email?: string | null;
           id?: boolean;
           instagram_url?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
           map_embed_url?: string | null;
           maps_url?: string | null;
           phone_e164?: string | null;

@@ -1,18 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapEmbedUrl, weeklyHours } from "./contact";
-
-describe("mapEmbedUrl", () => {
-  it("prefers the stored embed URL", () => {
-    const url = "https://www.google.com/maps/embed?pb=abc";
-    expect(mapEmbedUrl({ map_embed_url: url, address: "x" })).toBe(url);
-  });
-
-  it("builds a key-less embed from the address otherwise", () => {
-    expect(mapEmbedUrl({ map_embed_url: null, address: "Gölbaşı, Ankara" })).toBe(
-      "https://www.google.com/maps?q=G%C3%B6lba%C5%9F%C4%B1%2C%20Ankara&output=embed",
-    );
-  });
-});
+import { weeklyHours } from "./contact";
 
 describe("weeklyHours", () => {
   it("shows nothing until hours are entered", () => {

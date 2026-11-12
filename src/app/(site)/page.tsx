@@ -1,5 +1,5 @@
 import { CalendarCheck, Heart, MapPin, PawPrint } from "lucide-react";
-import { getBusinessProfile, MapEmbed } from "@/modules/business";
+import { getBusinessProfile, LocationMap } from "@/modules/business";
 import { getPublishedServices, ServiceList } from "@/modules/catalog";
 import { getSiteTexts } from "@/modules/content";
 import { getPublishedMedia, MediaImage } from "@/modules/media";
@@ -213,7 +213,7 @@ export default async function HomePage() {
               </ButtonLink>
             )}
           </div>
-          <MapEmbed profile={profile} />
+          <LocationMap profile={profile} />
         </div>
       </Section>
 
