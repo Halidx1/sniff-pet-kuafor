@@ -1,14 +1,37 @@
-import { MapPin } from "lucide-react";
+import { CalendarCheck, Heart, MapPin, PawPrint } from "lucide-react";
 import { getBusinessProfile, LocationMap } from "@/modules/business";
 import { getPublishedServices, ServiceList } from "@/modules/catalog";
 import { getSiteTexts } from "@/modules/content";
 import { getPublishedMedia, MediaImage } from "@/modules/media";
 import { ButtonLink } from "@/shared/ui/button";
+import { Container } from "@/shared/ui/container";
 import { InstagramIcon } from "@/shared/ui/icons";
 import { Section, SectionHeading } from "@/shared/ui/section";
-import { GroomStory } from "./_components/groom-story/groom-story";
-import { PawTrail } from "./_components/groom-story/paw-trail";
+import { HeroPaw } from "./_components/hero-paw";
 import { SERVICES_FALLBACK } from "./_components/fallbacks";
+
+const REASONS = [
+  {
+    icon: Heart,
+    title: "Özenli Bakım",
+    text: "Her bakımı acele etmeden, dostunuzun rahatını gözeterek yaparız.",
+  },
+  {
+    icon: PawPrint,
+    title: "Kedi ve Köpeklere Özel Yaklaşım",
+    text: "Kedilerin ve köpeklerin ihtiyaçları farklıdır; bakımı dostunuzun türüne ve karakterine göre planlarız.",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Randevulu Hizmet",
+    text: "Randevuyla çalışırız; böylece size ve dostunuza ayrılan zaman bellidir.",
+  },
+  {
+    icon: MapPin,
+    title: "Gölbaşı'nda Kolay Ulaşım",
+    text: "Gaziosmanpaşa Mahallesi'ndeyiz. Yol tarifi için sayfanın altındaki haritaya göz atabilirsiniz.",
+  },
+];
 
 const STEPS = [
   "Dostunuzu seçin.",
@@ -29,8 +52,39 @@ export default async function HomePage() {
 
   return (
     <>
-      <GroomStory texts={texts} />
-      <PawTrail welcomeText={texts.welcome_text} heroImage={hero} />
+      <section aria-labelledby="hero-heading" className="overflow-hidden bg-cream">
+        <Container className="grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:py-24">
+          <div>
+            <h1
+              id="hero-heading"
+              className="text-[2.6rem] leading-[1.04] font-extrabold tracking-[-0.025em] text-balance sm:text-6xl lg:text-[4.25rem]"
+            >
+              {texts.hero_title}
+            </h1>
+            <p className="mt-6 font-heading text-xl font-bold">{texts.hero_subtitle}</p>
+            <p className="mt-3 max-w-xl text-lg leading-relaxed">{texts.hero_text}</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href="/randevu-al">Hemen Randevu Al</ButtonLink>
+              <ButtonLink href="/hizmetlerimiz" variant="secondary">
+                Hizmetlerimizi Keşfet
+              </ButtonLink>
+            </div>
+          </div>
+          <HeroPaw image={hero} />
+        </Container>
+      </section>
+
+      <Section labelledBy="welcome-heading">
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+          <h2
+            id="welcome-heading"
+            className="text-3xl font-extrabold tracking-tight text-balance sm:text-4xl"
+          >
+            Sniff Pet Kuaför&apos;e Hoş Geldiniz!
+          </h2>
+          <p className="max-w-[65ch] text-lg leading-relaxed">{texts.welcome_text}</p>
+        </div>
+      </Section>
 
       <Section tone="cream" labelledBy="services-heading">
         <SectionHeading id="services-heading" title="Dostlarımız İçin Bakım Seçenekleri" />
@@ -48,6 +102,23 @@ export default async function HomePage() {
         >
           {services.length > 0 ? "Tüm Hizmetleri Gör" : "Bize Ulaşın"}
         </ButtonLink>
+      </Section>
+
+      <Section labelledBy="reasons-heading">
+        <SectionHeading id="reasons-heading" title="Minik Dostlarınız İçin Özenli Bakım" />
+        <ul className="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2">
+          {REASONS.map(({ icon: Icon, title, text }) => (
+            <li key={title} className="flex gap-5">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-caramel text-navy">
+                <Icon className="size-6" aria-hidden="true" />
+              </span>
+              <div>
+                <h3 className="text-xl font-extrabold">{title}</h3>
+                <p className="mt-2 leading-relaxed">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </Section>
 
       <Section tone="navy" labelledBy="steps-heading">

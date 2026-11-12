@@ -566,13 +566,12 @@ Found by the developer while reviewing the M2 deploy preview; built on the same 
   - Map shows only the shop: MapLibre + OpenFreeMap, coordinates in `business_profile` (ADR-020)
   - The 404 "BLOCKED" bar was Netlify's deploy-preview Drawer (an iframe it injects on every preview page, blocked by our CSP), not our code. It is turned off in the Netlify UI. E2E now checks that the 404 keeps the security headers
   - Warm oat replaces white and off-white backgrounds (ADR-021)
-  - Homepage scroll story (dog brushed and trimmed, then a cat brushed) + paw trail for the welcome text and "why us" points (ADR-022)
+  - Homepage scroll story (dog brushed and trimmed, then a cat brushed) + paw trail for the welcome text and "why us" points: the first CSS-only version (ADR-022) was rejected in review; it is redesigned in a follow-up PR (issue #64)
 - **Test:**
   - [ ] The map shows one paw pin and no other businesses; two fingers pan it on a phone
   - [ ] A made-up URL on the preview shows the 404 without a bar (Drawer off, private window)
   - [ ] No white surfaces left; axe still reports zero contrast violations
-  - [ ] The story animates in Chrome and Safari; with "reduce motion" on, it is a static picture and every text is visible
-  - [ ] Lighthouse ≥ 90 on `/` with the story and the map
+  - [ ] Lighthouse ≥ 90 on `/` with the map
 
 ### M3 — Admin content management (Must)
 

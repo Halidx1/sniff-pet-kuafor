@@ -33,7 +33,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [019](#adr-019-work-tracking-on-github-and-release-merges) | Work tracking on GitHub and release merges | Accepted |
 | [020](#adr-020-a-clean-map-maplibre-and-openfreemap) | A clean map: MapLibre and OpenFreeMap | Accepted |
 | [021](#adr-021-warm-oat-replaces-white-backgrounds) | Warm oat replaces white backgrounds | Accepted |
-| [022](#adr-022-scroll-driven-homepage-story-with-css-only) | Scroll-driven homepage story with CSS only | Accepted |
+| [022](#adr-022-scroll-driven-homepage-story-with-css-only) | Scroll-driven homepage story with CSS only | Superseded (rejected in review) |
 
 ---
 
@@ -600,7 +600,7 @@ The gate passed; no fallback is needed.
 ## ADR-022: Scroll-driven homepage story with CSS only
 
 - **Date:** 2026-11-12
-- **Status:** Accepted
+- **Status:** Superseded (2026-11-12). The developer reviewed the first CSS-only version on the deploy preview and rejected it as far from the intended experience (references: bonito-flakes-for-pets.com, webdesign.kernjosh.com, jitter.video). It was taken out of PR #65 before merging; a follow-up PR replaces it with a GSAP-based story (issue #64), recorded in a new ADR.
 
 **Context.** The developer asked for a homepage that animates as the visitor scrolls: a dog is brushed and trimmed, then a cat is brushed. After that, the welcome text and details appear inside paws. SPEC §6 had asked to avoid excessive animation.
 

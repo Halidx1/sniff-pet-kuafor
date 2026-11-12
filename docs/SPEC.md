@@ -166,7 +166,7 @@ Avoid colors beyond these tokens. Check that all text/background combinations me
 
 Friendly and welcoming; professional and trustworthy; modern and slightly playful; premium but approachable; pet-oriented without looking childish; clean, with generous whitespace.
 
-Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, ADR-022), which falls back to static frames. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
+Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, issue #64), which falls back to a static picture. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
 
 Build a small, reusable component set once (Button, Card, SectionHeading, Badge, etc.) and use it everywhere.
 
@@ -215,11 +215,11 @@ All texts below are the initial content. Store section texts where it's practica
 
 ### Hero section
 
-A **scroll-driven grooming story** (ADR-022, added after the M2 review). The first screen shows the texts below next to an illustrated scruffy dog. As the visitor scrolls, the dog is brushed, its fur is trimmed with scissors, and then a cat is brushed. Illustrations are original flat drawings in navy and caramel on cream, never photos, AI images or a redrawn logo. The scenes show only grooming already listed in §9 and carry no captions with new claims.
+A **scroll-driven grooming story** (issue #64, added after the M2 review; design in progress). The first screen shows the texts below next to an illustrated scruffy dog. As the visitor scrolls, the dog is brushed, its fur is trimmed with scissors, and then a cat is brushed. Illustrations are original flat drawings in navy and caramel on cream, never photos, AI images or a redrawn logo. The scenes show only grooming already listed in §9 and carry no captions with new claims.
 
 - The texts are real HTML, visible on the first screen without scrolling.
 - Native scrolling only; nothing is hijacked.
-- With `prefers-reduced-motion` or in browsers without CSS scroll-driven animations, the story is a static picture of the groomed pets.
+- With `prefers-reduced-motion`, the story is a static picture of the groomed pets.
 
 Texts:
 - Headline: **"Küçük Dostlarınız, Büyük Bir Özeni Hak Ediyor!"**

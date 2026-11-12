@@ -28,7 +28,8 @@ export function HeroPaw({ image }: { image: MediaItem | undefined }) {
         {image && (
           <MediaImage
             image={image}
-            sizes="(min-width: 1024px) 17rem, 71vw"
+            sizes="(min-width: 1024px) 23rem, 71vw"
+            priority
             className="size-full object-cover"
           />
         )}
