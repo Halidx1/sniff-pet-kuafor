@@ -35,7 +35,7 @@ export async function ServiceList({
               return (
                 <li
                   key={service.id}
-                  className="flex flex-col overflow-hidden rounded-3xl bg-oat-light"
+                  className="flex flex-col overflow-hidden rounded-3xl bg-sky-light"
                 >
                   {image && (
                     <MediaImage

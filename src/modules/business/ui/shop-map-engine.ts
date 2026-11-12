@@ -7,8 +7,8 @@ import { MAP_STYLE_URL, prepareMapStyle, type MapStyle } from "../domain/map-sty
 /** Copied from node_modules by scripts/copy-maplibre-worker.mjs before dev and build. */
 const WORKER_URL = "/vendor/maplibre-gl-worker.js";
 
-/** oat-light from globals.css, so the map sits in the page palette. */
-const MAP_BACKGROUND = "#f3ece2";
+/** sky-light from globals.css, so the map sits in the page palette. */
+const MAP_BACKGROUND = "#ebf1f7";
 
 const TURKISH_UI = {
   "AttributionControl.ToggleAttribution": "Harita kaynaklarını göster veya gizle",

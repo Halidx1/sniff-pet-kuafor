@@ -32,8 +32,9 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [018](#adr-018-caching-model-cache-components) | Caching model: Cache Components | Accepted (verified on Netlify 2026-11-11) |
 | [019](#adr-019-work-tracking-on-github-and-release-merges) | Work tracking on GitHub and release merges | Accepted |
 | [020](#adr-020-a-clean-map-maplibre-and-openfreemap) | A clean map: MapLibre and OpenFreeMap | Accepted |
-| [021](#adr-021-warm-oat-replaces-white-backgrounds) | Warm oat replaces white backgrounds | Accepted |
+| [021](#adr-021-warm-oat-replaces-white-backgrounds) | Warm oat replaces white backgrounds | Superseded by ADR-023 |
 | [022](#adr-022-scroll-driven-homepage-story-with-css-only) | Scroll-driven homepage story with CSS only | Superseded (rejected in review) |
+| [023](#adr-023-sky-blue-replaces-oat) | Sky blue replaces oat | Accepted |
 
 ---
 
@@ -582,7 +583,7 @@ The gate passed; no fallback is needed.
 ## ADR-021: Warm oat replaces white backgrounds
 
 - **Date:** 2026-11-12
-- **Status:** Accepted. Amends ADR-014.
+- **Status:** Superseded by ADR-023 (oat was too close to the logo's cream). Amended ADR-014.
 
 **Context.** In the M2 review the developer found the white cards (`#FFFFFF`) and near-white page bands (`neutral-bg #FAF6F1`) too stark next to the logo's navy and cream, and asked for a matching third colour instead of white.
 
@@ -618,4 +619,27 @@ The gate passed; no fallback is needed.
 **Consequences.**
 - Chrome, Edge and Safari 26+ animate; other browsers show the static picture, which still contains every text.
 - SPEC §6 and §8 are updated: one scroll story is allowed, other pages stay calm.
+
+---
+
+## ADR-023: Sky blue replaces oat
+
+- **Date:** 2026-11-12
+- **Status:** Accepted. Supersedes ADR-021; amends ADR-014.
+
+**Context.**
+- On the deploy preview the developer found oat (`#EDE3D6`) too close to the logo's cream (`#F5E1CE`): bands and headers blurred together.
+- The two colours have the same lightness (contrast 1.00:1) and a similar warm hue, so nothing told them apart.
+- Every light candidate is about as light as cream, so the difference has to come from hue.
+
+**Decision.**
+- Replace `oat`/`oat-light` with `sky` `#D6E1EC` (page background and plain bands) and `sky-light` `#EBF1F7` (cards and forms): a light tint of the logo navy.
+- Contrast (WCAG AA ≥ 4.5): navy 13.76 on sky and 16.03 on sky-light; muted-text 4.56 and 5.31; danger 4.77.
+- The map background follows `sky-light`.
+
+**Alternatives considered.** *Mist blue* (`#DFE6EE`, softer, weaker separation) and *sage* (`#E1E6D6`, less tied to the navy); the developer compared all three on the real pages and chose sky blue.
+
+**Consequences.**
+- Warm cream (headers, hero) and cool sky (bands) now alternate visibly.
+- The token names changed (`bg-oat` → `bg-sky`), so a leftover old class renders no colour and is easy to spot.
 

@@ -46,7 +46,7 @@ export function ContactChannels({
           <a
             href={c.href}
             rel="noopener noreferrer"
-            className="group flex items-center gap-4 rounded-2xl bg-oat-light p-4 transition-colors hover:bg-cream"
+            className="group flex items-center gap-4 rounded-2xl bg-sky-light p-4 transition-colors hover:bg-cream"
           >
             <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy text-cream">
               {c.icon}
