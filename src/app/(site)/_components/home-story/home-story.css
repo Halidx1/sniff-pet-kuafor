@@ -1,0 +1,225 @@
+/*
+ * Homepage grooming story (ADR-025). Layout + the states that don't need JavaScript:
+ *  - motion allowed: the scruffy starting picture; story-animator.tsx (GSAP) takes it
+ *    from there while the visitor scrolls;
+ *  - reduced motion: the finished picture (both pets groomed), nothing pinned.
+ * The page-load moment (headline stickers pop in, the dog draws itself) is CSS, so it
+ * starts at first paint instead of waiting for JavaScript.
+ */
+
+.hs {
+  overflow-x: clip; /* clip, not hidden: hidden would break pinning */
+  background: var(--color-cream);
+}
+
+.hs-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 72rem;
+  min-height: calc(100svh - 4rem);
+  margin-inline: auto;
+  padding: 2rem 1rem 5.5rem;
+}
+
+@media (min-width: 40rem) {
+  .hs-pin {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .hs-pin {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    align-items: center;
+    gap: 2rem;
+    min-height: calc(100svh - 5rem);
+    padding-block: 2rem;
+  }
+}
+
+/* ---------- Sticker headline ---------- */
+
+.hs-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.6rem, 5.4vw, 4.9rem);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.hs-word {
+  display: inline-block;
+  margin-right: 0.12em;
+  rotate: var(--tilt);
+  text-shadow: 0.045em 0.055em 0 var(--color-caramel);
+}
+
+/* ---------- Stage ---------- */
+
+.hs-stage {
+  position: relative;
+  aspect-ratio: 1000 / 700;
+  width: 100%;
+}
+
+.hs-frame {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+}
+
+.hs-scene {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Lines have pathLength="1": offset 0 = drawn, 1 = not drawn yet / rubbed out. */
+.hs-scene .ink {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.hs-captions {
+  position: absolute;
+  top: 0;
+  left: 2%;
+  list-style: none;
+}
+
+.hs-caption {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  padding: 0.3em 0.85em;
+  background: var(--color-caramel);
+  color: var(--color-navy);
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-weight: 800;
+  box-shadow: 0.2em 0.25em 0 var(--color-navy);
+}
+
+.hs-rail {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .hs-rail {
+    position: absolute;
+    top: 50%;
+    right: -0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    list-style: none;
+    translate: 0 -50%;
+  }
+  .hs-rail svg {
+    display: block;
+    width: 1.5rem;
+    rotate: 20deg;
+  }
+}
+
+.hs-rail-step {
+  opacity: 0.25;
+}
+
+.hs-hint {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  width: 2rem;
+  translate: -50% 0;
+  opacity: 0.6;
+}
+
+/* ---------- Motion allowed: starting picture + page-load moment ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .hs-cat,
+  .hs-eye-happy,
+  .hs-sparkle,
+  .hs-brush,
+  .hs-scissors,
+  .hs-caption {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .hs-word {
+    animation: hs-pop 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+    animation-delay: calc(var(--i) * 70ms + 100ms);
+  }
+  .hs-sub {
+    animation: hs-fade 0.6s ease-out 0.7s backwards;
+  }
+
+  /* "backwards", not "both": a finished CSS animation must not hold its last frame,
+     or it would override GSAP when the story later rubs lines out. */
+  .hs-dog .ink {
+    animation: hs-draw 1.6s ease-out backwards;
+  }
+  .hs-dog .paint {
+    animation: hs-fade 0.7s ease-out 0.8s backwards;
+  }
+
+  .hs-hint svg {
+    animation: hs-bob 1.6s ease-in-out 2s infinite;
+  }
+}
+
+@keyframes hs-pop {
+  from {
+    opacity: 0;
+    scale: 0.5;
+    translate: 0 0.4em;
+    rotate: calc(var(--tilt) * -3);
+  }
+}
+
+@keyframes hs-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes hs-bob {
+  50% {
+    translate: 0 0.5rem;
+  }
+}
+
+/* ---------- Reduced motion: the finished picture ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-strand,
+  .hs-cat-strand,
+  .hs-clump,
+  .hs-scruff,
+  .hs-eye-open,
+  .hs-brush,
+  .hs-scissors,
+  .hs-captions,
+  .hs-rail,
+  .hs-hint {
+    display: none;
+  }
+  .hs-dog {
+    transform: translateX(-170px);
+  }
+}

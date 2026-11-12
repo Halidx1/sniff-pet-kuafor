@@ -4,10 +4,9 @@ import { getPublishedServices, ServiceList } from "@/modules/catalog";
 import { getSiteTexts } from "@/modules/content";
 import { getPublishedMedia, MediaImage } from "@/modules/media";
 import { ButtonLink } from "@/shared/ui/button";
-import { Container } from "@/shared/ui/container";
 import { InstagramIcon } from "@/shared/ui/icons";
 import { Section, SectionHeading } from "@/shared/ui/section";
-import { HeroPaw } from "./_components/hero-paw";
+import { HomeStory } from "./_components/home-story/home-story";
 import { SERVICES_FALLBACK } from "./_components/fallbacks";
 
 const REASONS = [
@@ -41,38 +40,17 @@ const STEPS = [
 ];
 
 export default async function HomePage() {
-  const [texts, profile, services, [hero], gallery, instagram] = await Promise.all([
+  const [texts, profile, services, gallery, instagram] = await Promise.all([
     getSiteTexts(),
     getBusinessProfile(),
     getPublishedServices(),
-    getPublishedMedia("hero"),
     getPublishedMedia("gallery"),
     getPublishedMedia("instagram"),
   ]);
 
   return (
     <>
-      <section aria-labelledby="hero-heading" className="overflow-hidden bg-cream">
-        <Container className="grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:py-24">
-          <div>
-            <h1
-              id="hero-heading"
-              className="text-[2.6rem] leading-[1.04] font-extrabold tracking-[-0.025em] text-balance sm:text-6xl lg:text-[4.25rem]"
-            >
-              {texts.hero_title}
-            </h1>
-            <p className="mt-6 font-heading text-xl font-bold">{texts.hero_subtitle}</p>
-            <p className="mt-3 max-w-xl text-lg leading-relaxed">{texts.hero_text}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/randevu-al">Hemen Randevu Al</ButtonLink>
-              <ButtonLink href="/hizmetlerimiz" variant="secondary">
-                Hizmetlerimizi Keşfet
-              </ButtonLink>
-            </div>
-          </div>
-          <HeroPaw image={hero} />
-        </Container>
-      </section>
+      <HomeStory texts={texts} />
 
       <Section labelledBy="welcome-heading">
         <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
