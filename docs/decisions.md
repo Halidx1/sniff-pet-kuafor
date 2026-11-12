@@ -36,6 +36,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [022](#adr-022-scroll-driven-homepage-story-with-css-only) | Scroll-driven homepage story with CSS only | Superseded (rejected in review) |
 | [023](#adr-023-sky-blue-replaces-oat) | Sky blue replaces oat | Superseded by ADR-024 |
 | [024](#adr-024-keep-the-original-white-and-neutral-bg) | Keep the original white and neutral-bg | Accepted |
+| [025](#adr-025-hand-drawn-scroll-story-with-gsap-and-lenis) | Hand-drawn scroll story with GSAP and Lenis | Accepted |
 
 ---
 
@@ -658,4 +659,32 @@ The gate passed; no fallback is needed.
 **Alternatives considered.** Oat (ADR-021), sky blue (ADR-023), mist blue and sage, all compared on the real pages.
 
 **Consequences.** No palette change ships from the M2 review. The warmth and character the developer was missing come from the homepage art direction instead (hand-drawn story, separate PR).
+
+---
+
+## ADR-025: Hand-drawn scroll story with GSAP and Lenis
+
+- **Date:** 2026-11-12
+- **Status:** Accepted. Replaces ADR-022.
+
+**Context.**
+- The developer rejected the first, CSS-only story (ADR-022) and pointed to bonito-flakes-for-pets.com, webdesign.kernjosh.com and jitter.video: pinned full-screen chapters, smooth weighted scrolling, sticker typography, hand-made doodles and collage.
+- They chose a hand-drawn doodle style, the homepage story plus light site-wide touches, and GSAP + Lenis over staying CSS-only.
+
+**Decision.**
+- **Artwork:** original doodles generated at design time by `scripts/doodles/generate-doodles.mjs`. The scene is described as simple shapes; rough.js (dev dependency only) turns them into sketchy paths with a fixed seed. The output is a committed data module rendered as inline SVG by Server Components, so neither rough.js nor the drawing ships as JavaScript.
+- **Motion:** GSAP (`gsap` + `@gsap/react`, ScrollTrigger) pins the hero and scrubs one timeline through four chapters: brush, snip, cat, happy. Lines are drawn and rubbed out by animating `stroke-dashoffset` on paths with `pathLength="1"`, with no extra plugin.
+- **Scrolling:** Lenis smooth scrolling on the public site, driven by GSAP's ticker so pins and scroll position stay in sync. Touch scrolling stays native.
+- **Page-load moment:** the headline stickers pop and the dog draws itself with CSS animations, so it starts at first paint, before any JavaScript. The fill mode is `backwards`, so finished CSS animations never override GSAP.
+- **Accessibility:** texts and buttons are server-rendered HTML; the drawing and captions are `aria-hidden`. With `prefers-reduced-motion: reduce` there's no pinning and no smooth scroll, and CSS shows the finished picture.
+
+**Alternatives considered.**
+- *Stay CSS-only (ADR-022):* no JavaScript, but no smooth scrolling, fewer effects, and different behaviour per browser; rejected in review.
+- *Motion (Framer Motion):* React-friendly, but weaker for long pinned, scrubbed timelines.
+- *Stock or licensed animations (Lottie), cut-out stock photos, a commissioned illustrator:* offered; the developer chose the hand-drawn style.
+
+**Consequences.**
+- About 52 KB (gzip) of JavaScript on public pages for GSAP (28 KB), ScrollTrigger (18 KB) and Lenis (5 KB); the Lighthouse budget (≥ 0.9) still applies.
+- GSAP uses its free "Standard no-charge" licence (commercial use allowed), not an OSI open-source licence.
+- Changing the drawing means editing the generator and running it again; the generated file is not edited by hand.
 

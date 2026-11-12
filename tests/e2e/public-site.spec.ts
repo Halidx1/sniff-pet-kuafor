@@ -164,3 +164,42 @@ test("gallery filters by pet and browses photos in a lightbox", async ({ page })
   await expect(lightbox).toBeHidden();
   await expect(thumbs.first()).toBeFocused();
 });
+
+// The hand-drawn grooming story (ADR-025).
+test("hero texts and buttons are on the first screen", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
+  await expect(page.getByRole("link", { name: "Hemen Randevu Al" })).toBeInViewport();
+  await expect(page.locator(".hs-scene")).toHaveAttribute("aria-hidden", "true");
+});
+
+test("scrolling plays the story: the hero pins and the chapters change", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".hs-cat")).toBeHidden();
+  const pin = page.locator(".hs-pin");
+  const startTop = await pin.evaluate((el) => el.getBoundingClientRect().top);
+  // Halfway into the story: still pinned at the top, a caption is showing.
+  await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
+  await expect.poll(() => pin.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(0);
+  expect(startTop).toBeGreaterThan(0);
+  await expect(page.locator(".hs-caption").filter({ visible: true })).toHaveCount(1);
+  // Near the end: the cat has arrived.
+  await page.evaluate(() => window.scrollTo(0, innerHeight * 4));
+  await expect(page.locator(".hs-cat")).toBeVisible();
+});
+
+test.describe("with reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  test("the story is a still picture of both groomed pets", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator(".hs-cat")).toBeVisible();
+    await expect(page.locator(".hs-brush")).toBeHidden();
+    await expect(page.locator(".hs-strand").first()).toBeHidden();
+    await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
+    await expect
+      .poll(() => page.locator(".hs-pin").evaluate((el) => el.getBoundingClientRect().top))
+      .toBeLessThan(0);
+  });
+});

@@ -1,6 +1,7 @@
 import { getBusinessProfile, WhatsappButton } from "@/modules/business";
 import { MobileAppointmentBar, SiteHeader } from "./_components/site-header";
 import { SiteFooter } from "./_components/site-footer";
+import { SmoothScroll } from "./_components/smooth-scroll";
 
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
   const profile = await getBusinessProfile();
@@ -17,6 +18,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
       <SiteFooter />
       <WhatsappButton number={profile.whatsapp_e164} />
       <MobileAppointmentBar />
+      <SmoothScroll />
     </>
   );
 }
