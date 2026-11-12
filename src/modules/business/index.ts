@@ -7,6 +7,6 @@ export {
 } from "./data/business-repo";
 export { WHATSAPP_GREETING } from "./domain/contact";
 export { ContactChannels } from "./ui/contact-channels";
-export { MapEmbed } from "./ui/map-embed";
+export { LocationMap } from "./ui/location-map";
 export { OpeningHours } from "./ui/opening-hours";
 export { WhatsappButton } from "./ui/whatsapp-button";
