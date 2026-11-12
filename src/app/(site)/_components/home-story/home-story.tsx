@@ -54,10 +54,12 @@ export function HomeStory({ texts }: { texts: HeroTexts }) {
                 Hizmetlerimizi Keşfet
               </ButtonLink>
             </div>
-            <MotionToggle />
           </div>
 
           <div className="hs-stage">
+            {/* In the stage, not the copy: the stage never moves, so the button stays
+                visible from the first screen through the whole pinned story. */}
+            <MotionToggle />
             <div className="hs-frame">
               <StoryScene />
               <ol className="hs-captions" aria-hidden="true">

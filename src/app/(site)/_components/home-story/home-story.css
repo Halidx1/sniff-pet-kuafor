@@ -150,12 +150,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hs-motion-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     min-height: 2.75rem;
-    margin-top: 1.25rem;
     padding: 0.4rem 1rem;
+    background: var(--color-cream);
     border: 2px dashed var(--color-navy);
     border-radius: 999px;
     font-family: var(--font-heading);
