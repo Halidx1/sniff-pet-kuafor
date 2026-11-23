@@ -41,8 +41,8 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [027](#adr-027-return-reminders-a-due-list-with-one-tap-whatsapp-automation-later) | Return reminders: due list + one-tap WhatsApp | Accepted |
 | [028](#adr-028-ai-generated-illustrations-via-cloudflare-workers-ai-flux1-schnell) | AI-generated illustrations via Cloudflare Workers AI | Proposed |
 | [029](#adr-029-sync-the-shops-instagram-posts-with-the-official-api-as-drafts) | Sync the shop's Instagram posts with the official API, as drafts | Accepted (pending setup) |
-| [031](#adr-031-gallery-cards-per-instagram-post-with-the-shops-own-photos) | Gallery cards per Instagram post, with the shop's own photos | Accepted |
 | [030](#adr-030-customers-give-reminder-consent-through-an-online-form-confirmed-by-staff) | Reminder consent through an online form, confirmed by staff | Accepted |
+| [031](#adr-031-gallery-cards-per-instagram-post-with-the-shops-own-photos) | Gallery cards per Instagram post, with the shop's own photos | Accepted |
 
 ---
 
