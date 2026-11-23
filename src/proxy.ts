@@ -1,5 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+// Pure files only (no Server Actions in the proxy bundle).
+import { adminRedirect, type AdminState } from "@/modules/identity/domain/admin-flow";
 import { ADMIN_COOKIE_OPTIONS } from "@/shared/supabase/admin-cookies";
 
 // Runs in front of every /admin request (PLAN §3, ADR-006), like a servlet filter:
@@ -7,37 +9,6 @@ import { ADMIN_COOKIE_OPTIONS } from "@/shared/supabase/admin-cookies";
 //  2. refreshes the Supabase session and saves it in the /admin cookies;
 //  3. first, optimistic routing: sign in → set up or enter the 2FA code → panel.
 // The real check is requireAdmin() in every admin page and action, and RLS behind it.
-
-/** Where a visitor is in the sign-in flow. */
-export type AdminState =
-  | "signed-out"
-  | "needs-setup" // password ok, no 2FA app enrolled yet
-  | "needs-code" // password ok, 2FA code not entered in this session
-  | "signed-in"; // 2FA done (aal2)
-
-const SIGN_IN = "/admin/giris";
-const SETUP = "/admin/dogrulama-kurulumu";
-const CODE = "/admin/dogrulama";
-/** Reachable without a session. */
-const OPEN = new Set([SIGN_IN, "/admin/sifremi-unuttum"]);
-
-/** Where to send this request instead, or null to let it through. Pure, unit-tested. */
-export function adminRedirect(path: string, search: string, state: AdminState): string | null {
-  // Route handlers for the email link and signing out work in every state.
-  if (path.startsWith("/admin/auth/")) return null;
-  const next = `?next=${encodeURIComponent(path + search)}`;
-  switch (state) {
-    case "signed-out":
-      return OPEN.has(path) ? null : `${SIGN_IN}${path === "/admin" ? "" : next}`;
-    case "needs-setup":
-      return path === SETUP ? null : SETUP;
-    case "needs-code":
-      if (path === CODE) return null;
-      return OPEN.has(path) || path === SETUP ? CODE : `${CODE}${next}`;
-    case "signed-in":
-      return path === SIGN_IN || path === SETUP || path === CODE ? "/admin" : null;
-  }
-}
 
 /** Strict CSP for the admin: scripts only with this request's nonce (or loaded by them). */
 export function adminCsp(nonce: string, supabaseOrigin: string, dev: boolean): string {

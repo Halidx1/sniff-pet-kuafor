@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { confirmSetup, signOut, startSetup } from "@/modules/identity";
+import { confirmSetup, safeAdminNext, signOut, startSetup } from "@/modules/identity";
 import { AuthCard } from "../../_components/auth-card";
 import { SetupFlow } from "../../_components/auth-forms";
 
 export const metadata: Metadata = { title: "İki adımlı doğrulama kurulumu" };
 
-export default function SetupPage() {
+export default async function SetupPage({ searchParams }: PageProps<"/admin/dogrulama-kurulumu">) {
+  const target = safeAdminNext((await searchParams).next);
   return (
     <AuthCard
       title="İki adımlı doğrulama"
       intro="Paneli korumak için her girişte şifrenize ek olarak telefonunuzdaki bir uygulamanın ürettiği kod istenir. Bu kurulumu bir kez yapmanız yeterli."
     >
-      <SetupFlow start={startSetup} confirm={confirmSetup} />
+      <SetupFlow start={startSetup} confirm={confirmSetup} next={target} />
       <form action={signOut} className="mt-6 text-center">
         <button type="submit" className="font-semibold underline underline-offset-4">
           Çıkış yap

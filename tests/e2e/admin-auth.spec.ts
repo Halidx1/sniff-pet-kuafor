@@ -149,6 +149,8 @@ test("forgot password: same answer for any address, Turkish email, link + code â
     .match(/href="([^"]*\/admin\/auth\/confirm[^"]*)"/)![1]!
     .replaceAll("&amp;", "&");
   await page.goto(new URL(link).pathname + new URL(link).search);
+  // Opening the link spends nothing (mail scanners open links too); the button does.
+  await page.getByRole("button", { name: "Devam et" }).click();
 
   // The reset link alone isn't enough: the 2FA code comes first.
   await expect(page).toHaveURL("/admin/dogrulama?next=%2Fadmin%2Fsifre-yenile");
@@ -173,6 +175,7 @@ test("forgot password: same answer for any address, Turkish email, link + code â
 
 test("the email link rejects a forged or reused token", async ({ page }) => {
   await page.goto("/admin/auth/confirm?token_hash=abc&type=recovery");
+  await page.getByRole("button", { name: "Devam et" }).click();
   await expect(page).toHaveURL("/admin/giris?hata=baglanti");
   await expect(page.getByRole("main").getByRole("alert")).toContainText("BaÄŸlantÄ± geÃ§ersiz");
 });

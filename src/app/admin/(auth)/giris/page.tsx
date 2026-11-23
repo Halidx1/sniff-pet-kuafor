@@ -26,7 +26,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/admin/gir
       )}
       <SignInForm
         action={signIn}
-        next={target === "/admin" ? undefined : target}
+        next={target}
         siteKey={process.env.TURNSTILE_SITE_KEY}
         nonce={nonce}
       />

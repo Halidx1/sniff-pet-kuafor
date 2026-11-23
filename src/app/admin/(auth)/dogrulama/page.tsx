@@ -13,7 +13,7 @@ export default async function CodePage({ searchParams }: PageProps<"/admin/dogru
       title="Doğrulama kodu"
       intro="Telefonunuzdaki doğrulama uygulamasını açın ve Sniff Pet Kuaför için gösterilen 6 haneli kodu girin."
     >
-      <CodeForm action={verifyCode} next={target === "/admin" ? undefined : target} />
+      <CodeForm action={verifyCode} next={target} />
       <form action={signOut} className="mt-6 text-center">
         <button type="submit" className="font-semibold underline underline-offset-4">
           Farklı bir hesapla giriş yap

@@ -8,6 +8,7 @@ export {
   startSetup,
   updatePassword,
   verifyCode,
+  verifyEmailLink,
   type FormState,
   type SetupState,
 } from "./actions";
