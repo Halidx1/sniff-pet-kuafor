@@ -15,6 +15,10 @@ export function authErrorMessage(error: AuthErrorLike, step: AuthStep): string {
   }
   switch (step) {
     case "sign-in":
+      // Supabase sends this only after a correct password, so it reveals nothing new.
+      if (code === "email_not_confirmed") {
+        return "Bu hesap henüz onaylanmamış. Geliştiriciden hesabı onaylamasını isteyin.";
+      }
       return "E-posta adresi veya şifre hatalı.";
     case "code":
       if (code === "mfa_challenge_expired") return "Kodun süresi doldu. Yeni kodu girin.";
