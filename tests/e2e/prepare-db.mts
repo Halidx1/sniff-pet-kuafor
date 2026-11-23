@@ -1,6 +1,7 @@
-// Publishes two demo gallery photos (one cat, one dog) so the gallery filter and
-// lightbox can be tested. Runs before `next build` in `npm run test:e2e` and CI.
-// Local database only: it refuses any other SUPABASE_URL.
+// Checks that the demo gallery (the shop's Instagram photos, published by
+// `npm run seed:media`) is in the local database before the E2E build, so the
+// gallery tests fail with a clear message instead of an empty page.
+// Runs before `next build` in `npm run test:e2e` and CI. Local database only.
 import { existsSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
@@ -12,13 +13,12 @@ if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url)) {
 }
 
 const supabase = createClient(url, key, { auth: { persistSession: false } });
-const ids = ["3ed1a000-0001-4000-8000-000000000003", "3ed1a000-0001-4000-8000-000000000004"]; // a cat and a dog
-const { data, error } = await supabase
+const { count, error } = await supabase
   .from("media")
-  .update({ is_published: true })
-  .in("id", ids)
-  .select("id");
+  .select("id", { count: "exact", head: true })
+  .eq("kind", "gallery")
+  .eq("is_published", true)
+  .not("group_id", "is", null);
 if (error) throw new Error(error.message);
-if (data.length !== 2)
-  throw new Error("Demo gallery photos missing: run `npm run seed:media` first.");
-console.log("E2E fixture: 2 demo gallery photos published (local DB)");
+if (!count) throw new Error("Demo gallery missing: run `npm run seed:media` first.");
+console.log(`E2E fixture: ${count} published gallery photos in groups (local DB)`);

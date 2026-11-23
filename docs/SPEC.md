@@ -176,15 +176,13 @@ The homepage story uses illustrated characters (§8). They may be drawn by hand,
 
 ### Photography
 
-No real business photography exists yet.
+**The shop's own Instagram photos are the site's photos (ADR-031, decided by the developer on 2026-11-23):** the shop already publishes them, so the gallery, the hero and the About page use them (copied to `supabase/seed/media/shop/`, metadata stripped, `is_demo = true` until the owner confirms). The Unsplash stock photos are gone.
 
-- Use high-quality, free-licence stock photography (e.g. Unsplash, Pexels) of clean, healthy cats; beautifully groomed dogs; professional grooming environments; bathing and grooming; close-up pet portraits. Realistic photography, not illustrations.
+- Earlier rule, kept for future gaps: use high-quality, free-licence stock photography (e.g. Unsplash, Pexels) of clean, healthy cats; beautifully groomed dogs; professional grooming environments; bathing and grooming; close-up pet portraits. Realistic photography, not illustrations.
 - Every image is stored in Supabase Storage as a database record flagged `is_demo = true`, so the owner can replace it from `/admin` without any redesign.
 - Record source and photographer for each stock photo in `docs/IMAGE_CREDITS.md`.
 - If you cannot download images yourself, use neutral placeholder blocks in the brand colors and give me a list of search terms and required aspect ratios so I can pick photos.
-- The three branded posts in `sources/images/` (`brushing.jpg`, `feeding.jpg`, `nailing.jpg`) are the shop's Instagram posts. Their original source is unknown and they may be AI-generated.
-  - Use them only as demo Instagram-preview tiles (`is_demo = true`).
-  - Never as hero or gallery photos.
+- The three branded posts in `sources/images/` (`brushing.jpg`, `feeding.jpg`, `nailing.jpg`) are the shop's Instagram posts, used as the Instagram-preview tiles (`is_demo = true`).
 
 ---
 
@@ -275,7 +273,7 @@ Followed by an appointment CTA.
 
 Heading: **"Bakım Sonrası Mutlu Patiler"**
 
-Responsive photo grid of published gallery images. Button: **"Galeriyi Gör"** → `/galeri`.
+The first two gallery cards (same cards as `/galeri`). Button: **"Galeriyi Gör"** → `/galeri`.
 
 ### Instagram section
 
@@ -357,7 +355,11 @@ Button: **"Fiyat Bilgisi Al"** → WhatsApp (if set), otherwise `/iletisim`.
 ## 11. OTHER PAGES
 
 - **Hakkımızda:** editable rich text and an optional image. Initial copy is warm and general; no invented history or credentials.
-- **Galeri:** responsive grid with a lightbox; optional categories (Kedi / Köpek). Images have Turkish alt text.
+- **Galeri:** one card per Instagram post (ADR-031), in a symmetric grid (2 cards per row from tablet width, 1 on phones):
+  - a before/after post is an **"Önce | Sonra"** card: the two photos side by side, each tagged; the branded cover collage appears in the lightbox;
+  - a post with several photos (e.g. outfits) is a **carousel** card of the same size: two photos at a time, swipe or arrow buttons, a "N fotoğraf" tag;
+  - tapping a photo opens the lightbox, which browses every photo, covers included;
+  - optional categories (Kedi / Köpek), shown only when both exist. Images have Turkish alt text.
 - **Sıkça Sorulan Sorular:** accordion of published FAQ items, managed in admin. Seed a few sensible draft questions (e.g. how appointments work, what to bring) as unpublished drafts with placeholder answers.
 - **İletişim:** address, map, phone, WhatsApp, Instagram, "Yol Tarifi Al". No separate contact form in v1 (WhatsApp/phone is the preferred channel); the booking form handles requests.
 - **KVKK:** placeholder Aydınlatma Metni (see section 16), clearly marked for owner review.

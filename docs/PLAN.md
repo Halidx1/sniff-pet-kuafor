@@ -367,7 +367,7 @@ These ship with the booking module's own migrations, not in the MVP.
 | `/hizmetlerimiz` | Services grouped by category, or the §9 fallback text | catalog, media |
 | `/fiyatlarimiz` | Tier price table + add-ons, or the §10 fallback + "Fiyat Bilgisi Al" (WhatsApp if set, otherwise `/iletisim`) | catalog, business |
 | `/hakkimizda` | About text (Markdown, no HTML) + optional image | content, media |
-| `/galeri` | Grid + `<dialog>` lightbox, Kedi/Köpek filter | media |
+| `/galeri` | Cards per post (Önce \| Sonra pairs, carousels; ADR-031) + `<dialog>` lightbox, Kedi/Köpek filter | media |
 | `/sss` | `<details>` accordion | content |
 | `/iletisim` | Address, lazy-loaded map, phone, WhatsApp, Instagram, opening hours (once entered), "Yol Tarifi Al" | business |
 | `/randevu-al` | **MVP:** friendly "online randevu yakında" message with phone, WhatsApp and Instagram. **Later (postponed booking):** the booking wizard (`?hizmet=<id>`) | business (+ booking) |
@@ -595,7 +595,7 @@ Found by the developer while reviewing the M2 deploy preview (PR #59). Status at
 - **Merged — #66, homepage story (#64, ADR-025):** the first CSS-only story (ADR-022) was rejected; redesigned with hand-drawn doodles (rough.js generator, dev-only), GSAP ScrollTrigger and Lenis. Pinned chapters: brush → snip → cat → happy. Reduced motion gets a gentle version (fades instead of motion; Windows "Animation effects" off triggers it); an "Animasyonu tam hızda oynat" button switches to the full version (restarts from the top, remembered on the device). The developer approved this version on 2026-11-12; merged on 2026-11-23.
 - **Next:**
   - #66: paw trail (welcome text + "why us" in doodle paws, hero photo as a taped sticker), site-wide touches (paper grain, torn edges, hand-drawn heading underlines), Lighthouse ≥ 0.9 on `/`
-  - Gallery PR: the shop's Instagram photos replace the Unsplash demo photos (visible, `is_demo`), grouped per post (Önce | Sonra card per pet, one carousel card for the clothes post, symmetric grid); needs a `media` grouping column (additive migration). Owner confirms the photos and the story captions in #54
+  - Gallery PR (ADR-031): the shop's Instagram photos replace the Unsplash demo photos (published, `is_demo`), grouped per post with `media.group_id` + `group_role` (additive migration): 9 Önce | Sonra cards and one carousel for the clothes post, symmetric grid; hero and About use shop photos too; `seed:media` deletes the retired stock rows and files
 - **Test:**
   - [x] The map shows one paw pin and no other businesses; two fingers pan it on a phone
   - [x] A made-up URL on the preview shows the 404 without a bar (Drawer off)

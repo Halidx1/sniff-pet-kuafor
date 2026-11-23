@@ -41,6 +41,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [027](#adr-027-return-reminders-a-due-list-with-one-tap-whatsapp-automation-later) | Return reminders: due list + one-tap WhatsApp | Accepted |
 | [028](#adr-028-ai-generated-illustrations-via-cloudflare-workers-ai-flux1-schnell) | AI-generated illustrations via Cloudflare Workers AI | Proposed |
 | [029](#adr-029-sync-the-shops-instagram-posts-with-the-official-api-as-drafts) | Sync the shop's Instagram posts with the official API, as drafts | Accepted (pending setup) |
+| [031](#adr-031-gallery-cards-per-instagram-post-with-the-shops-own-photos) | Gallery cards per Instagram post, with the shop's own photos | Accepted |
 | [030](#adr-030-customers-give-reminder-consent-through-an-online-form-confirmed-by-staff) | Reminder consent through an online form, confirmed by staff | Accepted |
 
 ---
@@ -845,3 +846,32 @@ The gate passed; no fallback is needed.
 - A public form that takes personal data: Turnstile, rate limit, Zod, and E2E + pgTAP tests that the anon key can't read anything.
 - The consent wording and the KVKK notice v2 need the owner's (ideally legal) approval before go-live.
 - If phone verification becomes necessary (e.g. automatic reminders), it can be added to the form later.
+
+---
+
+## ADR-031: Gallery cards per Instagram post, with the shop's own photos
+
+- **Date:** 2026-11-23
+- **Status:** Accepted.
+
+**Context.**
+- The gallery showed Unsplash stock photos, kept unpublished because they could be mistaken for the shop's work.
+- The shop's Instagram posts follow a pattern: a branded collage, then a before photo, then an after photo; one post shows outfits in 7 photos.
+- The developer decided the shop's own Instagram photos may be used on the site, because the shop already publishes them, and asked for before/after visible per pet, the outfit photos grouped, and a symmetric layout.
+
+**Decision.**
+- `media` gets `group_id uuid` and `group_role ∈ {cover, before, after, slide}` (both or neither; at most one cover/before/after per group). Additive; ungrouped images behave as before. The same columns serve the Instagram sync (ADR-029).
+- A pure function `toGalleryCards` turns rows into cards: before + after (+ cover) → a **pair**; anything else with several photos → a **carousel**; otherwise a **single**. Unit-tested.
+- Layout: a 4-column grid from `sm` where pairs and carousels span 2 columns (1 column of cards on phones), so cards line up symmetrically. A pair shows Önce | Sonra side by side; a carousel shows two photos at a time with scroll-snap and arrow buttons that wrap around. The lightbox browses every photo of the visible cards, covers included.
+- The photos are committed to `supabase/seed/media/shop/` with all metadata stripped (they carried Instagram's IPTC blocks), seeded as **published** with `is_demo = true`. The hero and About images are shop photos too. `seed:media` deletes the retired Unsplash rows (only while still flagged demo) and their files.
+- The "Önce/Sonra" tags sit outside the photo buttons (the alt text already says "Bakım öncesi/sonrası"), so each button's visible text matches its accessible name (axe `label-content-name-mismatch`).
+
+**Alternatives considered.**
+- *Before/after slider (drag a handle):* a nice effect, but needs a custom accessible control and hides half of each photo; side by side is clearer on a phone.
+- *Show the branded cover collage as the card:* it already contains both photos, but smaller and with the logo repeated in every card; it stays available in the lightbox.
+- *One tile per photo, as before:* before and after of the same pet end up apart.
+
+**Consequences.**
+- About 4.5 MB of JPEGs in the repository (36 files); WebP variants are served from Storage as before.
+- Admin (M3) needs to group, re-order and tag photos; the Instagram sync (ADR-029) fills the same columns.
+- The owner still confirms the photos and the alt texts (#54).
