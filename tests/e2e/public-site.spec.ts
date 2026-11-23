@@ -23,6 +23,13 @@ for (const { path, h1 } of PAGES) {
     await expect(page.locator("html")).toHaveAttribute("lang", "tr");
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(h1);
+    // Let one-off page-load animations finish: half-faded text would count as low contrast.
+    await page.waitForFunction(() =>
+      document
+        .getAnimations()
+        .filter((anim) => anim.effect?.getTiming().iterations !== Infinity)
+        .every((anim) => anim.playState === "finished"),
+    );
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze();
@@ -201,4 +208,100 @@ test("the map opens directions: the device's maps app on phones, Google Maps on 
       .poll(() => page.evaluate(() => (window as unknown as { opened: string[] }).opened))
       .toEqual(["https://maps.app.goo.gl/ipSQ9QxkoMe3rBi49"]);
   }
+});
+
+// The hand-drawn grooming story (ADR-025).
+test("hero texts and buttons are on the first screen", async ({ page }) => {
+  await page.goto("/");
+  // With normal motion settings there is nothing to switch on.
+  await expect(page.locator(".hs-motion-toggle")).toBeHidden();
+  await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
+  await expect(page.getByRole("link", { name: "Hemen Randevu Al" })).toBeInViewport();
+  await expect(page.locator(".hs-scene")).toHaveAttribute("aria-hidden", "true");
+});
+
+test("scrolling plays the story: the hero pins and the chapters change", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".hs-cat")).toBeHidden();
+  const pin = page.locator(".hs-pin");
+  const startTop = await pin.evaluate((el) => el.getBoundingClientRect().top);
+  // Halfway into the story: still pinned at the top, a caption is showing.
+  // Wait for the story to set up its pin: scrolling earlier would make ScrollTrigger
+  // keep the visitor's place and jump past the story.
+  await page.locator(".pin-spacer").waitFor({ state: "attached" });
+  await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
+  await expect.poll(() => pin.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(0);
+  expect(startTop).toBeGreaterThan(0);
+  await expect(page.locator(".hs-caption").filter({ visible: true })).toHaveCount(1);
+  // Near the end: the cat has arrived.
+  await page.evaluate(() => window.scrollTo(0, innerHeight * 4));
+  await expect(page.locator(".hs-cat")).toBeVisible();
+});
+
+test.describe("with reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  test("a button plays the full animation from the top, remembered; and back", async ({ page }) => {
+    const wordAnimating = () =>
+      page
+        .locator(".hs-word")
+        .first()
+        .evaluate((el) => el.getAnimations().some((anim) => anim.playState === "running"));
+    await page.goto("/");
+    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    // Reduced motion: the headline is simply there.
+    expect(await wordAnimating()).toBe(false);
+
+    await page.evaluate(() => window.scrollTo(0, 300));
+    await page.getByRole("button", { name: "Animasyonu tam hızda oynat" }).click();
+    // Back to the beginning, with the headline animation.
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+    await expect(page.locator("html")).toHaveAttribute("data-motion", "full");
+    await expect.poll(wordAnimating).toBe(true);
+
+    // Full version: the dog's fur flies off (strands get a transform).
+    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    await page.evaluate(() => window.scrollTo(0, innerHeight * 1.6));
+    await expect
+      .poll(() =>
+        page
+          .locator(".hs-strand")
+          .first()
+          .evaluate((el) => getComputedStyle(el).transform),
+      )
+      .not.toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
+
+    await page.reload();
+    const back = page.getByRole("button", { name: "Sade animasyona dön" });
+    await expect(back).toBeVisible();
+
+    // Switching back: from the top again, headline shown without animation.
+    await back.click();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+    await expect(page.locator("html")).not.toHaveAttribute("data-motion", "full");
+    await expect(page.getByRole("button", { name: "Animasyonu tam hızda oynat" })).toBeVisible();
+    expect(await wordAnimating()).toBe(false);
+  });
+
+  test("the story plays gently: it pins and reaches the cat, but nothing flies", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    // Wait for the story to set up its pin: scrolling earlier would make ScrollTrigger
+    // keep the visitor's place and jump past the story.
+    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
+    const pin = page.locator(".hs-pin");
+    await expect
+      .poll(() => pin.evaluate((el) => Math.round(el.getBoundingClientRect().top)))
+      .toBe(0);
+    await page.evaluate(() => window.scrollTo(0, innerHeight * 4));
+    await expect(page.locator(".hs-cat")).toBeVisible();
+    // Fur faded instead of flying: no transform was ever applied to a strand.
+    const transforms = await page
+      .locator(".hs-strand")
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).transform));
+    expect(transforms.every((t) => t === "none" || t === "matrix(1, 0, 0, 1, 0, 0)")).toBe(true);
+  });
 });
