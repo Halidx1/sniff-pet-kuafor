@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { formValues, toFieldErrors, type FormState } from "@/shared/lib/form-state";
 import { adminClient } from "@/shared/supabase/admin-client";
 import { nextSignInStep, requireAdmin } from "./data/session";
 import { authErrorMessage } from "./domain/auth-errors";
@@ -18,19 +19,10 @@ import {
 // nature (a sign-in form must work without a session); everything that changes an
 // admin's account calls requireAdmin() first.
 
-export type FormState = {
-  error?: string;
-  fieldErrors?: Record<string, string>;
-  message?: string;
-};
+export type { FormState } from "@/shared/lib/form-state";
 
-const fields = (formData: FormData) => Object.fromEntries(formData) as Record<string, string>;
-
-function fieldErrors(issues: { path: PropertyKey[]; message: string }[]) {
-  const out: Record<string, string> = {};
-  for (const issue of issues) out[String(issue.path[0])] ??= issue.message;
-  return out;
-}
+const fields = formValues;
+const fieldErrors = toFieldErrors;
 
 /** Step 1: email + password (+ Turnstile token when configured). */
 export async function signIn(_: FormState, formData: FormData): Promise<FormState> {

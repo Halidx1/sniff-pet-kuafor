@@ -11,3 +11,7 @@ export { DirectionsLink } from "./ui/directions-link";
 export { LocationMap } from "./ui/location-map";
 export { OpeningHours } from "./ui/opening-hours";
 export { WhatsappButton } from "./ui/whatsapp-button";
+// Admin (M3): İşletme Bilgileri.
+export { saveBusinessProfile } from "./actions";
+export { getBusinessProfileForAdmin } from "./data/business-admin-repo";
+export { BusinessProfileForm } from "./ui/business-profile-form";

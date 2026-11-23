@@ -4,7 +4,7 @@ import Link from "next/link";
 import { safeAdminNext, signIn } from "@/modules/identity";
 import { AuthCard } from "../../_components/auth-card";
 import { SignInForm } from "../../_components/auth-forms";
-import { FormMessage } from "../../_components/form-parts";
+import { FormMessage } from "@/shared/ui/form";
 
 export const metadata: Metadata = { title: "Giriş" };
 

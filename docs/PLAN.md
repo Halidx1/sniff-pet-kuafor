@@ -645,7 +645,7 @@ Comes with the Instagram-photo gallery (grouping column on `media`), right after
     - **mandatory 2FA enrolment and challenge**
     - forgot and reset password, change password
     - HttpOnly cookies scoped to `/admin`; nonce CSP
-  - İşletme Bilgileri, Metinler
+  - İşletme Bilgileri, Metinler (done: phone input normalised to E.164, edits refresh the public pages via `updateTag`)
   - Çalışma Saatleri: opening hours plus closures (full or partial day, public note)
   - **"Acil kapanış"** quick action on the panel; site-wide closure banner
   - Hizmetler: tiers, DEMO badge, confirm prices, add-ons, ↑/↓, publish, delete with confirmation

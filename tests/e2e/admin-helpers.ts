@@ -90,3 +90,37 @@ export async function latestEmail(to: string): Promise<{ subject: string; html: 
 export async function clearInbox() {
   await fetch(`${MAILPIT}/api/v1/messages`, { method: "DELETE" });
 }
+
+/**
+ * An admin with 2FA already set up (enrolled through the API, as the setup page would),
+ * so editor tests start at the code step. Returns the TOTP secret.
+ */
+export async function createAdminWith2fa(email: string, password: string, displayName: string) {
+  await createAdmin(email, password, displayName);
+  const client = createClient(SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY ?? "", {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { error: signInError } = await client.auth.signInWithPassword({ email, password });
+  if (signInError) throw new Error(`signIn: ${signInError.message}`);
+  const { data, error } = await client.auth.mfa.enroll({ factorType: "totp", issuer: "E2E" });
+  if (error || !data) throw new Error(`enroll: ${error?.message}`);
+  const code = await freshCode(data.totp.secret);
+  const { error: verifyError } = await client.auth.mfa.challengeAndVerify({
+    factorId: data.id,
+    code,
+  });
+  if (verifyError) throw new Error(`verify: ${verifyError.message}`);
+  await client.auth.signOut();
+  return data.totp.secret;
+}
+
+/** Runs SQL on the local database (test setup and clean-up only). */
+export async function localSql<T>(run: (sql: postgres.Sql) => Promise<T>): Promise<T> {
+  assertLocal();
+  const sql = postgres(DB_URL, { max: 1 });
+  try {
+    return await run(sql);
+  } finally {
+    await sql.end();
+  }
+}
