@@ -38,7 +38,15 @@ const securityHeaders = [
   ...(indexable ? [] : [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]),
 ];
 
+// The site's own address for links in admin emails (password reset), fixed at build time:
+// Netlify sets CONTEXT/URL/DEPLOY_PRIME_URL during the build; locally NEXT_PUBLIC_SITE_URL.
+const siteUrl =
+  (process.env.CONTEXT === "production" ? process.env.URL : process.env.DEPLOY_PRIME_URL) ??
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  "http://localhost:3000";
+
 const nextConfig: NextConfig = {
+  env: { ADMIN_SITE_URL: siteUrl.replace(/\/$/, "") },
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

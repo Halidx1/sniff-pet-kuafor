@@ -42,7 +42,7 @@ export function SignInForm({
         error={state.fieldErrors?.password}
       />
       {next && <input type="hidden" name="next" value={next} />}
-      <Turnstile siteKey={siteKey} nonce={nonce} />
+      <Turnstile siteKey={siteKey} nonce={nonce} resetOn={state} />
       <SubmitButton pending="Giriş yapılıyor…">Giriş yap</SubmitButton>
     </form>
   );
@@ -81,9 +81,11 @@ function CodeField({ error }: { error?: string }) {
 export function SetupFlow({
   start,
   confirm,
+  next,
 }: {
   start: () => Promise<SetupState>;
   confirm: Action<SetupState>;
+  next?: string;
 }) {
   const [state, formAction] = useActionState(confirm, {});
   const [setup, setSetup] = useState<SetupState | null>(null);
@@ -139,6 +141,7 @@ export function SetupFlow({
       </details>
       <FormMessage error={state.error} />
       <input type="hidden" name="factorId" value={current.factorId} />
+      {next && <input type="hidden" name="next" value={next} />}
       <CodeField error={state.fieldErrors?.code} />
       <SubmitButton pending="Doğrulanıyor…">Kurulumu tamamla</SubmitButton>
     </form>
@@ -167,7 +170,7 @@ export function ResetRequestForm({
         required
         error={state.fieldErrors?.email}
       />
-      <Turnstile siteKey={siteKey} nonce={nonce} />
+      <Turnstile siteKey={siteKey} nonce={nonce} resetOn={state} />
       <SubmitButton pending="Gönderiliyor…">Sıfırlama bağlantısı gönder</SubmitButton>
     </form>
   );

@@ -37,6 +37,12 @@ export const setupSchema = codeSchema.extend({
 
 export const resetRequestSchema = z.object({ email, captchaToken });
 
+/** The email link's hidden fields (password reset; the other types for completeness). */
+export const emailLinkSchema = z.object({
+  token_hash: z.string().min(1).max(500),
+  type: z.enum(["recovery", "email", "invite", "magiclink"]),
+});
+
 /** SPEC §14 / PLAN T1: at least 12 characters (Supabase checks the same). */
 export const newPasswordSchema = z
   .object({

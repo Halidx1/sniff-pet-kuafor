@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
+import { adminRedirect } from "../domain/admin-flow";
 import { adminClient } from "@/shared/supabase/admin-client";
 
 export type Admin = { userId: string; email: string | null; displayName: string };
@@ -20,14 +21,16 @@ export const getAdmin = cache(async (): Promise<Admin | null> => {
   const claims = data?.claims;
   if (!claims || claims.aal !== "aal2") return null;
   const { data: displayName, error } = await supabase.rpc("current_admin_name");
-  if (error || !displayName) return null;
+  // A database error is not "not an admin": fail loudly instead of signing them out.
+  if (error) throw new Error(`current_admin_name: ${error.message}`);
+  if (!displayName) return null;
   return { userId: claims.sub, email: claims.email ?? null, displayName };
 });
 
 /**
  * Where a session that isn't a full admin session has to go next. Server Actions render
  * their redirect target in the same request (proxy.ts doesn't see it), so the code
- * decides this itself, with the same rules as the proxy.
+ * decides this itself, with the same rules (domain/admin-flow.ts).
  */
 export async function nextSignInStep(next?: string): Promise<string> {
   await connection();
@@ -39,10 +42,8 @@ export async function nextSignInStep(next?: string): Promise<string> {
   // would send them straight back here.
   if (claims.aal === "aal2") return "/admin/auth/cikis?hata=yetki";
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.nextLevel !== "aal2") return "/admin/dogrulama-kurulumu";
-  return next && next !== "/admin"
-    ? `/admin/dogrulama?next=${encodeURIComponent(next)}`
-    : "/admin/dogrulama";
+  const state = aal?.nextLevel === "aal2" ? "needs-code" : "needs-setup";
+  return adminRedirect(next ?? "/admin", "", state) ?? "/admin";
 }
 
 /**

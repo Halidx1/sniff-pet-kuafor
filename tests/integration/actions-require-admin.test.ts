@@ -36,6 +36,7 @@ const PUBLIC_ACTIONS = new Set([
   "identity.startSetup",
   "identity.confirmSetup",
   "identity.requestPasswordReset",
+  "identity.verifyEmailLink",
   "identity.signOut",
 ]);
 
