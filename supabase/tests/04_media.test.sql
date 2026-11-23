@@ -1,7 +1,7 @@
 -- media: bucket limits, no listing for visitors, published-only rows.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(13);
 
 insert into auth.users (id, email) values ('aaaaaaaa-0000-4000-8000-000000000001', 'admin@example.test');
 insert into private.admins (user_id, display_name) values ('aaaaaaaa-0000-4000-8000-000000000001', 'Test Admin');
@@ -28,6 +28,26 @@ select throws_ok(
   '23514', null, 'alt text is required'
 );
 
+-- Groups (ADR-031): a role needs a group and vice versa; one before per group.
+select throws_ok(
+  $$ insert into public.media (kind, storage_prefix, file_ext, widths, width, height, alt_text, group_role)
+     values ('gallery', 'gallery/d0000000-0000-4000-8000-000000000004', 'webp', '{480}', 480, 320, 'x', 'before') $$,
+  '23514', null, 'a group role needs a group id'
+);
+insert into public.media (kind, storage_prefix, file_ext, widths, width, height, alt_text, group_id, group_role)
+  values ('gallery', 'gallery/d0000000-0000-4000-8000-000000000005', 'webp', '{480}', 480, 320, 'Önce', 'e0000000-0000-4000-8000-000000000001', 'before');
+select throws_ok(
+  $$ insert into public.media (kind, storage_prefix, file_ext, widths, width, height, alt_text, group_id, group_role)
+     values ('gallery', 'gallery/d0000000-0000-4000-8000-000000000006', 'webp', '{480}', 480, 320, 'Önce 2', 'e0000000-0000-4000-8000-000000000001', 'before') $$,
+  '23505', null, 'only one before photo per group'
+);
+select lives_ok(
+  $$ insert into public.media (kind, storage_prefix, file_ext, widths, width, height, alt_text, group_id, group_role) values
+     ('gallery', 'gallery/d0000000-0000-4000-8000-000000000007', 'webp', '{480}', 480, 320, 'Kare 1', 'e0000000-0000-4000-8000-000000000002', 'slide'),
+     ('gallery', 'gallery/d0000000-0000-4000-8000-000000000008', 'webp', '{480}', 480, 320, 'Kare 2', 'e0000000-0000-4000-8000-000000000002', 'slide') $$,
+  'a carousel may have many slides'
+);
+
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 set local role anon;
 -- Assertions use this test's own rows, so they hold whether or not seed:media has run.
@@ -48,7 +68,7 @@ reset role;
 select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated","aal":"aal2"}', true);
 set local role authenticated;
 select is((select count(*)::int from storage.objects where bucket_id = 'media' and name like 'gallery/d0000000-%'), 1, 'admin with 2FA sees files');
-select is((select count(*)::int from public.media where id::text like 'd0000000-%'), 2, 'admin with 2FA sees unpublished media too');
+select is((select count(*)::int from public.media where storage_prefix like 'gallery/d0000000-%'), 5, 'admin with 2FA sees unpublished media too');
 reset role;
 
 select * from finish();

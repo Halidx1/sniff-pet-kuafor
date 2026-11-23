@@ -151,25 +151,40 @@ test("mobile menu opens, closes with Escape and returns focus", async ({ page, i
   await expect(menu).toBeHidden();
 });
 
-test("gallery filters by pet and browses photos in a lightbox", async ({ page }) => {
+test("gallery shows one card per post: Önce | Sonra pairs, a carousel, and a lightbox", async ({
+  page,
+}) => {
   await page.goto("/galeri");
-  const thumbs = page.getByRole("button", { name: /^Fotoğrafı büyüt/ });
-  await expect(thumbs).toHaveCount(2);
+  // Seed (supabase/seed/media/manifest.json): 9 before/after posts + 1 clothes carousel of 7.
+  const cards = page.locator("main ul").first().locator("> li");
+  await expect(cards).toHaveCount(10);
+  const befores = page.getByRole("button", { name: /^Fotoğrafı büyüt: Bakım öncesi/ });
+  const afters = page.getByRole("button", { name: /^Fotoğrafı büyüt: Bakım sonrası/ });
+  await expect(befores).toHaveCount(9);
+  await expect(afters).toHaveCount(9);
+  // Only dogs in the seed → no Kedi/Köpek filter.
+  await expect(page.getByRole("group", { name: "Fotoğrafları filtrele" })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Kedi", exact: true }).click();
-  await expect(thumbs).toHaveCount(1);
-  await page.getByRole("button", { name: "Tümü" }).click();
-  await expect(thumbs).toHaveCount(2);
+  // The carousel scrolls sideways with its buttons.
+  const next = page.getByRole("button", { name: "Sonraki fotoğraflar" });
+  const track = next.locator("xpath=..").locator("> div").first();
+  await next.scrollIntoViewIfNeeded();
+  await next.click();
+  await expect.poll(() => track.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
 
-  await thumbs.first().click();
+  // The lightbox opens on the clicked photo; arrows browse into the cover collage.
+  await befores.first().click();
   const lightbox = page.getByRole("dialog", { name: "Fotoğraf" });
   await expect(lightbox).toBeVisible();
-  const firstAlt = await lightbox.locator("img").getAttribute("alt");
+  await expect(lightbox.locator("img")).toHaveAttribute("alt", /^Bakım öncesi/);
   await page.keyboard.press("ArrowRight");
-  await expect(lightbox.locator("img")).not.toHaveAttribute("alt", firstAlt ?? "");
+  await expect(lightbox.locator("img")).toHaveAttribute("alt", /^Bakım sonrası/);
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("ArrowLeft");
+  await expect(lightbox.locator("img")).toHaveAttribute("alt", /logosu altında/);
   await page.keyboard.press("Escape");
   await expect(lightbox).toBeHidden();
-  await expect(thumbs.first()).toBeFocused();
+  await expect(befores.first()).toBeFocused();
 });
 
 test("the map opens directions: the device's maps app on phones, Google Maps on desktop", async ({

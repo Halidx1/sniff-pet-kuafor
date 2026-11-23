@@ -186,6 +186,8 @@ export type Database = {
           created_at: string;
           credit: string | null;
           file_ext: string;
+          group_id: string | null;
+          group_role: Database["public"]["Enums"]["media_group_role"] | null;
           height: number;
           id: string;
           is_demo: boolean;
@@ -206,6 +208,8 @@ export type Database = {
           created_at?: string;
           credit?: string | null;
           file_ext: string;
+          group_id?: string | null;
+          group_role?: Database["public"]["Enums"]["media_group_role"] | null;
           height: number;
           id?: string;
           is_demo?: boolean;
@@ -225,6 +229,8 @@ export type Database = {
           created_at?: string;
           credit?: string | null;
           file_ext?: string;
+          group_id?: string | null;
+          group_role?: Database["public"]["Enums"]["media_group_role"] | null;
           height?: number;
           id?: string;
           is_demo?: boolean;
@@ -417,6 +423,7 @@ export type Database = {
       health_check: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
+      media_group_role: "cover" | "before" | "after" | "slide";
       media_kind: "hero" | "gallery" | "instagram" | "about" | "service";
       pet_scope: "cat" | "dog" | "both";
       pet_type: "cat" | "dog";
@@ -534,6 +541,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      media_group_role: ["cover", "before", "after", "slide"],
       media_kind: ["hero", "gallery", "instagram", "about", "service"],
       pet_scope: ["cat", "dog", "both"],
       pet_type: ["cat", "dog"],

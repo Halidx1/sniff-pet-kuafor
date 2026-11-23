@@ -2,7 +2,7 @@ import { CalendarCheck, Heart, MapPin, PawPrint } from "lucide-react";
 import { DirectionsLink, getBusinessProfile, LocationMap } from "@/modules/business";
 import { getPublishedServices, ServiceList } from "@/modules/catalog";
 import { getSiteTexts } from "@/modules/content";
-import { getPublishedMedia, MediaImage } from "@/modules/media";
+import { Gallery, getPublishedMedia, MediaImage } from "@/modules/media";
 import { ButtonLink } from "@/shared/ui/button";
 import { InstagramIcon } from "@/shared/ui/icons";
 import { Section, SectionHeading } from "@/shared/ui/section";
@@ -123,17 +123,9 @@ export default async function HomePage() {
         <SectionHeading id="gallery-heading" title="Bakım Sonrası Mutlu Patiler" />
         {gallery.length > 0 ? (
           <>
-            <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-              {gallery.slice(0, 6).map((image) => (
-                <li key={image.id}>
-                  <MediaImage
-                    image={image}
-                    sizes="(min-width: 1024px) 33vw, 50vw"
-                    className="aspect-square w-full rounded-2xl object-cover"
-                  />
-                </li>
-              ))}
-            </ul>
+            <div className="mt-10">
+              <Gallery images={gallery} limit={2} />
+            </div>
             <ButtonLink href="/galeri" variant="secondary" className="mt-10">
               Galeriyi Gör
             </ButtonLink>

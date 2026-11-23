@@ -2,12 +2,20 @@
 
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useRef, useState } from "react";
+import {
+  cardCategory,
+  cardPhotos,
+  type GalleryCard,
+  type GroupRole,
+} from "../domain/gallery-cards";
 
 export type GalleryPhoto = {
   id: string;
   alt: string;
   caption: string | null;
   category: "cat" | "dog" | null;
+  group_id: string | null;
+  group_role: GroupRole | null;
   width: number;
   height: number;
   thumb: string;
@@ -15,6 +23,7 @@ export type GalleryPhoto = {
   large: string;
 };
 
+type Card = GalleryCard<GalleryPhoto>;
 type Filter = "all" | "cat" | "dog";
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "Tümü" },
@@ -22,23 +31,31 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "dog", label: "Köpek" },
 ];
 
-/** Grid with an optional Kedi/Köpek filter and a native <dialog> lightbox (Escape closes, arrows browse). */
-export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
+// Each tile is half a card; cards are half the container from `sm` up.
+const TILE_SIZES = "(min-width: 1280px) 19rem, (min-width: 640px) 25vw, 50vw";
+
+/**
+ * Symmetric grid of post cards (Önce | Sonra pairs and carousels) with an optional
+ * Kedi/Köpek filter and a native <dialog> lightbox (Escape closes, arrows browse
+ * every photo, including each post's cover collage).
+ */
+export function GalleryLightbox({ cards }: { cards: Card[] }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [index, setIndex] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 
-  const visible = filter === "all" ? photos : photos.filter((p) => p.category === filter);
+  const visibleCards = filter === "all" ? cards : cards.filter((c) => cardCategory(c) === filter);
+  const photos = visibleCards.flatMap(cardPhotos);
   const showFilter =
-    photos.some((p) => p.category === "cat") && photos.some((p) => p.category === "dog");
-  const current = index === null ? null : visible[index];
+    cards.some((c) => cardCategory(c) === "cat") && cards.some((c) => cardCategory(c) === "dog");
+  const current = index === null ? null : photos[index];
 
-  const open = (i: number) => {
-    setIndex(i);
+  const open = (photo: GalleryPhoto) => {
+    setIndex(photos.indexOf(photo));
     dialog.current?.showModal();
   };
   const step = (delta: number) =>
-    setIndex((i) => (i === null ? i : (i + delta + visible.length) % visible.length));
+    setIndex((i) => (i === null ? i : (i + delta + photos.length) % photos.length));
 
   return (
     <>
@@ -58,28 +75,21 @@ export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
         </div>
       )}
 
-      <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        {visible.map((photo, i) => (
-          <li key={photo.id}>
-            <button
-              type="button"
-              onClick={() => open(i)}
-              aria-label={`Fotoğrafı büyüt: ${photo.alt}`}
-              className="block w-full overflow-hidden rounded-2xl bg-beige"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element -- pre-sized variants (ADR-008) */}
-              <img
-                src={photo.thumb}
-                srcSet={photo.srcSet}
-                sizes="(min-width: 1024px) 33vw, 50vw"
-                width={photo.width}
-                height={photo.height}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="aspect-square w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
-              />
-            </button>
+      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+        {visibleCards.map((card) => (
+          <li key={card.id} className={card.kind === "single" ? "col-span-1" : "col-span-2"}>
+            {card.kind === "pair" && (
+              <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-2xl bg-beige">
+                <Tile photo={card.before} label="Önce" onOpen={open} />
+                <Tile photo={card.after} label="Sonra" onOpen={open} />
+              </div>
+            )}
+            {card.kind === "carousel" && <Carousel slides={card.slides} onOpen={open} />}
+            {card.kind === "single" && (
+              <div className="overflow-hidden rounded-2xl bg-beige">
+                <Tile photo={card.image} onOpen={open} />
+              </div>
+            )}
           </li>
         ))}
       </ul>
@@ -109,7 +119,7 @@ export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
               <figcaption className="text-center text-cream">{current.caption}</figcaption>
             )}
             <div className="flex gap-3">
-              {visible.length > 1 && (
+              {photos.length > 1 && (
                 <button
                   type="button"
                   onClick={() => step(-1)}
@@ -128,7 +138,7 @@ export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
               >
                 <X aria-hidden="true" />
               </button>
-              {visible.length > 1 && (
+              {photos.length > 1 && (
                 <button
                   type="button"
                   onClick={() => step(1)}
@@ -143,5 +153,108 @@ export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
         )}
       </dialog>
     </>
+  );
+}
+
+/** One square photo that opens the lightbox; `label` adds the "Önce"/"Sonra" tag. */
+function Tile({
+  photo,
+  label,
+  onOpen,
+}: {
+  photo: GalleryPhoto;
+  label?: string;
+  onOpen: (photo: GalleryPhoto) => void;
+}) {
+  return (
+    // The tag sits outside the button: the photo's alt text already says
+    // "Bakım öncesi/sonrası", and visible text inside a button must be part of its name.
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => onOpen(photo)}
+        aria-label={`Fotoğrafı büyüt: ${photo.alt}`}
+        className="group block w-full overflow-hidden bg-beige"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- pre-sized variants (ADR-008) */}
+        <img
+          src={photo.thumb}
+          srcSet={photo.srcSet}
+          sizes={TILE_SIZES}
+          width={photo.width}
+          height={photo.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+      </button>
+      {label && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-2 left-2 rounded-full bg-navy px-3 py-1 font-heading text-sm font-bold text-cream sm:bottom-3 sm:left-3"
+        >
+          {label}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Two photos visible at a time, scrolled sideways (swipe, or the arrow buttons). */
+function Carousel({
+  slides,
+  onOpen,
+}: {
+  slides: GalleryPhoto[];
+  onOpen: (photo: GalleryPhoto) => void;
+}) {
+  const track = useRef<HTMLDivElement>(null);
+  const scroll = (direction: 1 | -1) => {
+    const el = track.current;
+    if (!el) return;
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+    const atStart = el.scrollLeft <= 4;
+    // Wrap around at either end, so the buttons never go dead.
+    if (direction === 1 && atEnd) el.scrollTo({ left: 0, behavior: "smooth" });
+    else if (direction === -1 && atStart) el.scrollTo({ left: el.scrollWidth, behavior: "smooth" });
+    else el.scrollBy({ left: (direction * el.clientWidth) / 2, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative">
+      <div
+        ref={track}
+        className="flex snap-x snap-mandatory gap-1 overflow-x-auto overscroll-x-contain rounded-2xl bg-beige [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {slides.map((photo) => (
+          <div key={photo.id} className="w-[calc(50%-2px)] shrink-0 snap-start">
+            <Tile photo={photo} onOpen={onOpen} />
+          </div>
+        ))}
+      </div>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-2 right-2 rounded-full bg-navy px-3 py-1 font-heading text-sm font-bold text-cream sm:top-3 sm:right-3"
+      >
+        {slides.length} fotoğraf
+      </span>
+      <button
+        type="button"
+        onClick={() => scroll(-1)}
+        aria-label="Önceki fotoğraflar"
+        className="lightbox-btn absolute top-1/2 left-2 -translate-y-1/2"
+      >
+        <ChevronLeft aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        onClick={() => scroll(1)}
+        aria-label="Sonraki fotoğraflar"
+        className="lightbox-btn absolute top-1/2 right-2 -translate-y-1/2"
+      >
+        <ChevronRight aria-hidden="true" />
+      </button>
+    </div>
   );
 }
