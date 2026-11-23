@@ -16,7 +16,8 @@ export default defineConfig({
   },
   // Mobile first: the owner and most visitors use phones.
   projects: [
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    // Admin specs share one test account, so they run in one project only.
+    { name: "mobile", use: { ...devices["Pixel 7"] }, testIgnore: /admin-.*\.spec\.ts/ },
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
   ],
   webServer: {

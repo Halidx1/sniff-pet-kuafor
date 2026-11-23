@@ -640,7 +640,7 @@ Comes with the Instagram-photo gallery (grouping column on `media`), right after
 ### M3 — Admin content management (Must)
 
 - **Build:**
-  - Identity:
+  - Identity (done, ADR-033):
     - sign-in with Turnstile
     - **mandatory 2FA enrolment and challenge**
     - forgot and reset password, change password
