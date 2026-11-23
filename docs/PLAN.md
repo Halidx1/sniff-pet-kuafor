@@ -649,7 +649,7 @@ Comes with the Instagram-photo gallery (grouping column on `media`), right after
   - Çalışma Saatleri: opening hours plus closures (full or partial day, public note)
   - **"Acil kapanış"** quick action on the panel; site-wide closure banner
   - Hizmetler: tiers, DEMO badge, confirm prices, add-ons, ↑/↓, publish, delete with confirmation
-  - Galeri / Instagram / Hero / About: browser resize, signed upload, alt text required, delete removes the files
+  - Fotoğraflar (done, ADR-034): Galeri / Instagram / Hero / About tabs; browser resize, signed upload, alt text required, publish/hide, ↑/↓, Önce / Sonra and carousel grouping, delete removes the files
   - SSS; `revalidatePublicSite()`; dashboard checklist
   - Owner's guide draft (Turkish), including 2FA setup
 - **You do:**

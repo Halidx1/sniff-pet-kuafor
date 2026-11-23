@@ -10,6 +10,7 @@ export function Field({
   name,
   error,
   hint,
+  id: idProp,
   ...input
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -17,7 +18,7 @@ export function Field({
   error?: string;
   hint?: string;
 }) {
-  const id = `f-${name}`;
+  const id = idProp ?? `f-${name}`;
   const describedBy = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(" ");
   return (
     <div>
@@ -52,6 +53,7 @@ export function TextArea({
   name,
   error,
   hint,
+  id: idProp,
   ...area
 }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label: string;
@@ -59,7 +61,7 @@ export function TextArea({
   error?: string;
   hint?: string;
 }) {
-  const id = `f-${name}`;
+  const id = idProp ?? `f-${name}`;
   const describedBy = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(" ");
   return (
     <div>
@@ -79,6 +81,49 @@ export function TextArea({
         className="mt-2 block w-full rounded-xl border-2 border-navy/30 bg-white px-4 py-3 text-lg leading-relaxed focus:border-navy aria-invalid:border-danger"
         {...area}
       />
+      {error && (
+        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-danger">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** A labelled drop-down, same wiring as Field. */
+export function Select({
+  label,
+  name,
+  error,
+  options,
+  id: idProp,
+  ...select
+}: React.SelectHTMLAttributes<HTMLSelectElement> & {
+  label: string;
+  name: string;
+  error?: string;
+  options: { value: string; label: string }[];
+}) {
+  const id = idProp ?? `f-${name}`;
+  return (
+    <div>
+      <label htmlFor={id} className="block font-heading font-bold">
+        {label}
+      </label>
+      <select
+        id={id}
+        name={name}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className="mt-2 block min-h-12 w-full rounded-xl border-2 border-navy/30 bg-white px-4 text-lg focus:border-navy aria-invalid:border-danger"
+        {...select}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
       {error && (
         <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-danger">
           {error}

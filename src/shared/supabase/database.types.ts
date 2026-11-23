@@ -422,6 +422,8 @@ export type Database = {
     Functions: {
       current_admin_name: { Args: Record<PropertyKey, never>; Returns: string };
       health_check: { Args: Record<PropertyKey, never>; Returns: boolean };
+      media_group: { Args: { p_ids: string[]; p_layout: string }; Returns: string };
+      media_reorder: { Args: { p_ids: string[] }; Returns: undefined };
     };
     Enums: {
       media_group_role: "cover" | "before" | "after" | "slide";

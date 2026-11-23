@@ -928,3 +928,28 @@ The gate passed; no fallback is needed.
 **Consequences.**
 - Admin pages render per request (fine for two admins).
 - E2E for the admin runs in the desktop project only (one shared test account) and needs Mailpit in CI.
+
+---
+
+## ADR-034: The media manager (M3, issue #32)
+
+- **Date:** 2026-11-24
+- **Status:** Accepted. Implements ADR-008, ADR-009 and ADR-031 for the admin.
+
+**Decision.**
+- **Upload in two Server Actions around the browser's own uploads.** `requestUpload` (after `requireAdmin()`) picks a fresh random folder `<kind>/<uuid>` and returns one signed upload URL per size. The browser resizes the photo (480/960/1600 px, never enlarged; WebP, JPEG where WebP can't be written), lowering the quality until each file is under ~300 KB, and `PUT`s each file with a plain `fetch` (no Supabase client in the browser). `addMedia` then checks that the folder holds exactly the expected files before it inserts the row.
+- **New photos start hidden, at the top of their list.** Nothing reaches the site until the owner presses "Yayınla".
+- **Saving a photo's texts confirms it:** `is_demo` becomes false. The owner has looked at the photo and its description.
+- **Multi-row changes are database functions** (`media_reorder`, `media_group`). They are `SECURITY INVOKER`, so RLS still decides and each change is one transaction. Grouping takes ungrouped gallery photos only; a pair's upper photo is "Önce".
+- **Order is per card:** ↑/↓ moves a whole card, and the list is rewritten so each card's photos stay together.
+- **Delete removes the row first** (the site stops showing it at once), then every file in the folder. A group left with a single photo is dissolved.
+- **Forms work without JavaScript** except the uploader (resizing needs the browser). Publish, move, group and delete are plain form posts; delete asks for confirmation in an expandable box.
+
+**Alternatives considered.**
+- *Upload through a Server Action body:* the 1 MB default limit, and Netlify function payload limits.
+- *Several updates from the app for grouping/reordering:* not atomic; a failure halfway would leave a broken card.
+- *Drag-and-drop ordering:* harder with a keyboard or screen reader, and fiddly on phones; ↑/↓ buttons are clear.
+
+**Consequences.**
+- A photo whose upload is abandoned between the two actions leaves unreferenced files in a random folder. They are invisible (no listing for visitors) and small; a cleanup job can come later if it ever matters.
+- Service images get the same uploader with the services editor (#31).
