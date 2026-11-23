@@ -41,6 +41,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [027](#adr-027-return-reminders-a-due-list-with-one-tap-whatsapp-automation-later) | Return reminders: due list + one-tap WhatsApp | Accepted |
 | [028](#adr-028-ai-generated-illustrations-via-cloudflare-workers-ai-flux1-schnell) | AI-generated illustrations via Cloudflare Workers AI | Proposed |
 | [029](#adr-029-sync-the-shops-instagram-posts-with-the-official-api-as-drafts) | Sync the shop's Instagram posts with the official API, as drafts | Accepted (pending setup) |
+| [030](#adr-030-customers-give-reminder-consent-through-an-online-form-confirmed-by-staff) | Reminder consent through an online form, confirmed by staff | Accepted |
 
 ---
 
@@ -815,3 +816,32 @@ The gate passed; no fallback is needed.
 - The gallery stays current with one tap per post; the photos are hosted by us, so the site doesn't depend on Instagram's CDN.
 - Meta can change the API or require app review; then the manual upload path still works.
 - The KVKK notice should mention that the shop's public Instagram posts are shown on the website.
+
+---
+
+## ADR-030: Customers give reminder consent through an online form, confirmed by staff
+
+- **Date:** 2026-11-23
+- **Status:** Accepted (owner's answers relayed by the developer; consent wording pending owner + legal review).
+
+**Context.**
+- Return reminders (ADR-027) need the customer's recorded, separate consent (KVKK; law 6563 for commercial messages).
+- The owner wants customers to give that consent online, through a form, rather than staff ticking a box.
+- The owner also answered: a single admin account for now (more accounts through the admin panel later) and anonymisation after 2 years without a visit.
+
+**Decision.**
+- A public page `/hatirlatma-izni` with name, phone, optional pets, a required "Aydınlatma Metni'ni okudum" checkbox and a separate, optional, unticked consent checkbox with the exact wording; withdrawal on the same page.
+- The form writes a **request** (`customers.consent_requests`) through a `SECURITY DEFINER` RPC called server-side with the secret key, after Turnstile and a rate limit. The anon role has no grants on any `customers` table.
+- **Staff confirm each request** (match to a customer by phone, or create one). Only then does the customer's consent become true, with source `online_form`, the submission time and the consent-text version.
+- Unaccepted requests are deleted after 30 days. Customers are anonymised after 24 months without a visit (setting).
+- v1 has one admin account; a "Kullanıcılar" section comes later.
+
+**Alternatives considered.**
+- *Apply the form directly:* anyone could sign up someone else's number; a staff check costs a tap.
+- *Verify the phone with an SMS code:* proves ownership, but SMS costs money and needs a provider; the staff check plus the opt-out line in every message is enough for manual reminders.
+- *Consent only at the counter (the earlier SPEC):* the owner prefers online.
+
+**Consequences.**
+- A public form that takes personal data: Turnstile, rate limit, Zod, and E2E + pgTAP tests that the anon key can't read anything.
+- The consent wording and the KVKK notice v2 need the owner's (ideally legal) approval before go-live.
+- If phone verification becomes necessary (e.g. automatic reminders), it can be added to the form later.

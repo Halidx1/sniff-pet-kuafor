@@ -274,14 +274,15 @@ Personal data: every table is admin-only. RLS `using/with check (private.is_admi
   - `phone_e164`, `whatsapp_e164` (`+90…`, as in `business_profile`), `email?`
   - `notes ≤ 1000`
   - `kvkk_notice_version` + `kvkk_informed_at` (required)
-  - `reminder_consent bool default false`, `reminder_consent_at?`, `reminder_consent_source ∈ {in_person, whatsapp, phone}`: a check requires the date and source when consent is true
+  - `reminder_consent bool default false`, `reminder_consent_at?`, `reminder_consent_source ∈ {online_form, in_person, whatsapp, phone}`, `reminder_consent_text_version?`: a check requires the date and source when consent is true
   - `archived_at?`
-- **`pet_types` (owner-defined, ordered):** `species ∈ {cat, dog}`, `name` ("Uzun tüylü köpek" …), `default_interval_days 7–365?` (empty until the owner sets it: no invented intervals), `sort_order`.
+- **`pet_types` (owner-editable, ordered):** `species ∈ {cat, dog}`, `name`, `examples?` (breeds shown as a hint), `default_interval_days 7–365?`, `confirmed_at?`, `sort_order`. Seeded with the 7 suggested types of SPEC §12A (`confirmed_at` null → "Önerilen — onaylayın" badge; saving the row sets it). Types without a sourced interval stay empty.
 - **`pets`:** `customer_id → customers (on delete cascade)`, `name`, `species`, `pet_type_id? → pet_types`, `breed?`, `notes?`, `reminder_interval_days 7–365?` (manual override), `archived_at?`.
 - **`visits`:** `pet_id → pets (cascade)`, `visited_on date` (not in the future), `note?`, `price_paid_try numeric(10,2)?`, `created_by`.
 - **`visit_services`:** `visit_id → visits (cascade)`, `service_id? → catalog.services (on delete set null)`, `service_name` (a snapshot, so renaming or deleting a service never changes history).
 - **`reminders`:** `pet_id → pets (cascade)`, `due_on`, `channel ∈ {whatsapp_manual}` (later: `whatsapp_api`, `sms`, `email`), `outcome ∈ {sent, booked, declined, no_reply, snoozed}`, `snooze_until?`, `message` (snapshot), `acted_at`, `acted_by`.
-- **`reminder_settings` (1 row):** `message_template` (placeholders `{musteri}`, `{dost}`, `{hizmet}`), `lead_days`, `pause_days`, `anonymise_after_months?`.
+- **`reminder_settings` (1 row):** `message_template` (placeholders `{musteri}`, `{dost}`, `{tarih}`, `{hizmet}`; seeded with the SPEC §13 draft), `consent_text` + `consent_text_version`, `lead_days`, `pause_days`, `anonymise_after_months default 24` (owner's answer).
+- **`consent_requests` (ADR-030):** `kind ∈ {grant, withdraw}`, `full_name?` (1–120, required for grant), `phone_e164`, `pets_text? ≤ 300`, `kvkk_notice_version`, `consent_text_version`, `submitted_at`, `status ∈ {new, accepted, rejected}`, `customer_id? → customers (on delete set null)`, `handled_at?`, `handled_by?`. No anon grants: the public form calls a `SECURITY DEFINER` RPC `customers.submit_consent_request(...)` through `serviceClient()` after Turnstile and the rate limit (same pattern as the postponed booking RPC). Accepting one sets the customer's consent fields from it. A daily `pg_cron` job deletes `new`/`rejected` rows older than 30 days.
 - **Due computation:** a pure function in `customers/domain/due.ts` (unit-tested):
   - interval = the pet's own interval, else its type's default, else "not set";
   - due = last `visited_on` + interval;
@@ -371,6 +372,7 @@ These ship with the booking module's own migrations, not in the MVP.
 | `/iletisim` | Address, lazy-loaded map, phone, WhatsApp, Instagram, opening hours (once entered), "Yol Tarifi Al" | business |
 | `/randevu-al` | **MVP:** friendly "online randevu yakında" message with phone, WhatsApp and Instagram. **Later (postponed booking):** the booking wizard (`?hizmet=<id>`) | business (+ booking) |
 | `/kvkk` | Draft Aydınlatma Metni, clearly marked | content |
+| `/hatirlatma-izni` | **M5 (ADR-030):** online reminder consent form (grant or withdraw), Turnstile + rate limit; linked from the footer and a QR code at the counter | customers |
 | `not-found.tsx` | Turkish 404 | — |
 | *(every page)* | Closure banner, e.g. "12 Aralık Perşembe günü kapalıyız. …", shown while a closure with a public note is upcoming or active | business |
 | `/sitemap.xml`, `/robots.txt` | `/admin` disallowed; previews get `noindex` | — |
@@ -691,11 +693,12 @@ Comes with the Instagram-photo gallery (grouping column on `media`), right after
   - `customers` module: migrations, RLS without any anon grant, audit, types (tables in §2)
   - Domain: due computation, message template filling, Turkish phone input to E.164, CSV export (formula-injection safe)
   - Admin **Müşteriler**: search (name, phone, pet), customer and pet forms (KVKK-informed checkbox; separate reminder-consent checkbox with source), visit history
+  - Public **`/hatirlatma-izni`** consent form (ADR-030) + admin **İzin talepleri** (match by phone or create, accept/reject, withdrawals); printable QR code for the counter
   - **"Ziyaret ekle"**: a phone-first flow (pet → services → date → note) that shows the next due date
   - **Hatırlatmalar**: Bu hafta / Gecikmiş / İzin yok; "WhatsApp'tan yaz" (`wa.me` + template), "Ara", outcomes (randevu aldı, istemiyor, cevap yok, ertele)
   - **Hatırlatma Ayarları**: pet types and intervals, template, lead and pause days, anonymisation period
   - Dashboard count; per-customer export and delete; monthly anonymisation job
-  - Employee accounts as ordinary 2FA admins; owner's guide section
+  - One admin account in v1 (owner's answer); a "Kullanıcılar" section to add accounts comes later. Owner's guide section
   - KVKK notice v2 (customer history and reminders)
 - **Tests:**
   - Unit (due rules, template, phone, CSV) ≥ 90 %
@@ -705,6 +708,7 @@ Comes with the Instagram-photo gallery (grouping column on `media`), right after
 - **Test (manual, on a phone):**
   - [ ] Recording a visit at the counter takes under a minute
   - [ ] A customer without consent never gets a message button
+  - [ ] The consent form on a phone: a grant shows up under İzin talepleri, accepting it enables the WhatsApp button; a withdrawal removes it
   - [ ] Export and delete of one customer work
   - [ ] Nothing about customers is reachable without logging in (try the REST API with the anon key: empty or error)
 

@@ -440,14 +440,30 @@ Staff record every visit in the admin panel: which customer, which pet, which se
 
 - **Customer:** full name, phone, WhatsApp number (usually the same), optional email, notes.
   - KVKK: the date and version of the Aydınlatma Metni the customer was informed with (§16), recorded when staff create the customer.
-  - **Reminder consent**, separate and optional: whether the customer wants return reminders, when and how they agreed (in person, WhatsApp, phone). No consent → never reminded.
+  - **Reminder consent**, separate and optional: whether the customer wants return reminders, when and how they agreed (**online form**, the default; or in person, WhatsApp, phone). No consent → never reminded.
 - **Pet:** name, species (Kedi / Köpek), **pet type** (e.g. "Uzun tüylü köpek", "Kısa tüylü kedi"; the list is defined by the owner), breed (optional), notes (e.g. health or behaviour), optional **own reminder interval**.
 - **Visit:** pet, date, services applied (picked from the services list, with a snapshot of each name), optional note. Price paid is optional.
 - **Reminder actions:** when a reminder was sent, by whom, through which channel, and the outcome: randevu aldı / istemiyor / cevap yok / ertelendi.
 
 ### When a pet is due
 
-- Each **pet type** has a default interval in days, set by the owner (none invented: until it's set, the pet appears as "aralık belirlenmedi").
+- Each **pet type** has a default interval in days. The owner confirms or changes it in Hatırlatma Ayarları; until a type has an interval, its pets appear as "aralık belirlenmedi".
+
+**Suggested pet types and default intervals** (2026-11-23). The dog types are the coat groups seen in the shop's Instagram posts; the intervals are typical professional grooming intervals from public grooming guides (sources below), not the shop's own figures. They are seeded as **suggestions** with a "Önerilen — onaylayın" badge until the owner saves them. Where no source gave a figure, the interval stays empty.
+
+| Pet type (shown in the panel) | Examples | Seen in the shop's posts | Suggested interval | Basis |
+|---|---|---|---|---|
+| Kıvırcık tüylü köpek | Poodle, Toy Poodle, Doodle, Bichon | Yes, most posts | 35 days (5 weeks) | haircut every 4–6 weeks (Rover) |
+| Uzun ipeksi tüylü köpek | Shih Tzu, Maltese, Havanese, Lhasa Apso, Yorkshire | Yes | 35 days (5 weeks) | professional groom every 4–6 weeks for Maltese, Havanese (GoodRx) |
+| Püsküllü tüylü köpek | Cocker Spaniel, Setter | Yes | 42 days (6 weeks) | medium–long coats every 4–6 weeks (GoodRx) |
+| Yoğun çift katlı tüylü köpek | Pomeranian, Pekingese, German Shepherd, Golden Retriever, Husky | Yes | 56 days (8 weeks) | trim every 4–6 weeks, bath every 6–8, deshedding every 8–12 (iHeartDogs, Adoptapet, Rover); never shaved |
+| Kısa tüylü köpek | Labrador, Beagle, Pug, French Bulldog | No | empty | no professional interval found; weekly brushing at home |
+| Uzun tüylü kedi | Persian, Ankara kedisi, Van kedisi, Maine Coon | No (no cats in the posts) | 42 days (6 weeks) | every 4–8 weeks (Chewy); Persians 4–6 |
+| Kısa tüylü kedi | British Shorthair, tekir | No | empty | no source found |
+
+Sources (checked 2026-11-23): [Rover](https://www.rover.com/uk/blog/how-to-brush-dog), [GoodRx](https://www.goodrx.com/pet-health/dog/how-often-should-you-groom-your-dog), [iHeartDogs](https://iheartdogs.com/how-often-do-you-need-to-groom-a-pomeranian/), [Adoptapet](https://www.adoptapet.com/blog/adoption/how-often-should-i-groom-my-dog), [Rover (double coats)](https://www.rover.com/blog/how-often-should-i-groom-my-dog), [Chewy](https://www.chewy.com/education/cat/grooming/care-long-haired-cat).
+
+Pet type is about the coat; the size tiers for prices (§10) stay separate.
 - Staff can set a different interval for a single pet; it wins over the type's default.
 - Due date = date of the pet's last visit + interval. The list shows pets from a few days before the due date (setting) and overdue ones.
 - A pet isn't shown again for a while after a reminder (setting), or while it is snoozed.
@@ -461,6 +477,19 @@ Staff record every visit in the admin panel: which customer, which pet, which se
   - Outcome buttons: Randevu aldı, İstemiyor, Cevap yok, Ertele.
 - The panel's dashboard shows how many pets are due this week.
 
+### Online reminder consent form (ADR-030, owner's answer 2026-11-23)
+
+Customers give their reminder consent themselves, online.
+
+- A public page **`/hatirlatma-izni`** ("Bakım hatırlatması almak ister misiniz?"), not in the main menu: linked from the footer and from a QR code at the counter.
+- Fields: ad soyad, telefon (WhatsApp), evcil dostlarının adı ve türü (optional, free text), and two separate checkboxes:
+  1. "Aydınlatma Metni'ni okudum" (informing, required, links to `/kvkk`);
+  2. the **consent itself**, with its exact wording, optional and unticked: e.g. "Sniff Pet Kuaför'ün evcil dostumun bakım zamanı geldiğinde bana WhatsApp üzerinden hatırlatma mesajı göndermesini kabul ediyorum." (draft, owner + legal review).
+- Spam protection: Cloudflare Turnstile and a rate limit, like the other public forms. Nothing is published; the visitor sees a plain thank-you message.
+- The request is **not** applied automatically, because a phone number typed into a form isn't verified. It lands in the admin panel under **Hatırlatmalar → İzin talepleri**; staff match it to an existing customer (suggested by phone number) or create the customer, then accept it. Consent is then stored with source "online form", the submission time and the consent-text version.
+- **Withdrawal** is as easy as giving consent: the same page has "Hatırlatma almak istemiyorum" (phone only), every message says how to stop (reply "İPTAL"), and staff untick the consent.
+- Requests that aren't accepted are deleted after 30 days.
+
 ### Later: automatic reminders
 
 Designed for, not built in v1: the same reminder can later be sent automatically (WhatsApp Business API, SMS or email) by a scheduled job, for consenting customers only, once the legal checks are done (§18: İYS registration and commercial-message rules) and the owner accepts the running costs.
@@ -469,7 +498,7 @@ Designed for, not built in v1: the same reminder can later be sent automatically
 
 - Export one customer's data (CSV) on request.
 - Delete one customer completely (pets, visits and reminders with them), with confirmation.
-- Anonymise customers with no visit for a period the owner chooses (§16).
+- Anonymise customers with no visit for **2 years** (owner's answer, 2026-11-23; adjustable in Hatırlatma Ayarları) (§16).
 
 ---
 
@@ -478,6 +507,16 @@ Designed for, not built in v1: the same reminder can later be sent automatically
 Must cost nothing and work without a domain.
 
 - **Return reminders (v1, ADR-027):** staff send them from the reminder list (§12A) with **"WhatsApp'tan yaz"**: `wa.me/<customer number>` with a prefilled, editable Turkish message from the owner's template, sent from the shop's own WhatsApp. Only customers who agreed to reminders get the button.
+- **Message template (draft, 2026-11-23; the owner edits it in Hatırlatma Ayarları).** Placeholders: `{musteri}` customer's first name, `{dost}` pet's name, `{tarih}` last visit date (`12 Ekim 2026`), `{hizmet}` last visit's services. Placeholders never take a Turkish suffix, so vowel harmony never breaks. The text names the sender and says how to stop (law 6563 practice):
+
+  ```text
+  Merhaba {musteri} 🐾
+  {dost} en son {tarih} tarihinde bize gelmişti ({hizmet}). Yeni bakım zamanı yaklaşıyor, onu tekrar görmeyi çok isteriz!
+  Size uygun bir gün ve saat için bu mesaja yanıt vermeniz yeterli.
+  Sevgiler,
+  Sniff Pet Kuaför
+  Bu hatırlatmaları almak istemiyorsanız "İPTAL" yazabilirsiniz.
+  ```
 - **Ready for automation later:** the reminder logic doesn't depend on how a message is delivered (a "channel" seam), so an automatic channel (WhatsApp Business API, SMS, email) can be added later without changing the rest, after the legal checks in §18.
 - **Booking notifications** (approve/reject messages) belong to the postponed booking system (§12).
 - SMS and the WhatsApp Business API are out of scope for v1 (paid, and they need İYS registration and consent handling).
@@ -490,7 +529,7 @@ The owner is not technical and will mostly use a phone. The admin panel must be 
 
 ### Access
 
-- Supabase Auth with email + password. No public sign-up; accounts are created manually (owner, developer and, for the customer history, shop employees). In v1 every account has the same rights; roles are an open question (§18).
+- Supabase Auth with email + password. No public sign-up. **v1 has a single admin account** (the owner; the developer keeps a maintenance account), created manually (owner's answer, 2026-11-23). **Later:** a "Kullanıcılar" section where the admin creates further accounts (e.g. employees), each with mandatory 2FA; roles are decided then.
 - **Two-factor authentication (TOTP authenticator app) is mandatory for every admin account.**
   - It is enforced in the database: admin RLS requires an `aal2` session.
   - First login forces enrolment.
@@ -505,12 +544,12 @@ The owner is not technical and will mostly use a phone. The admin panel must be 
 
 1. **Panel (dashboard):** pets due for a reminder this week, today's visits, quick links ("Ziyaret ekle", "Yeni müşteri"), and the **"Acil kapanış"** quick action.
 2. **Müşteriler (§12A):** search by customer name, phone or pet name; create and edit customers and their pets; each customer's visit history. **"Ziyaret ekle"** is a quick, phone-friendly flow for the counter: pick the pet, tick the services, date (today by default), optional note; it shows the next due date. Export and delete one customer (KVKK).
-3. **Hatırlatmalar (§12A):** the reminder list with "WhatsApp'tan yaz", "Ara" and the outcome buttons.
+3. **Hatırlatmalar (§12A):** the reminder list with "WhatsApp'tan yaz", "Ara" and the outcome buttons; **İzin talepleri** from the online consent form (match or create the customer, accept or delete; withdrawal requests).
 4. **Hizmetler:** create, edit, hide/publish, delete, reorder. Fields: name, description, category, pet type, image, per-tier price/price type/duration, add-ons. Clear **DEMO — İşletme onayı gerekli** badge on demo items.
 5. **Galeri:** upload (resized in the browser), alt text (required), caption, category, reorder, publish/hide, delete. Same for Instagram-preview images and the hero image. **Yeni Instagram gönderileri:** synced drafts with "Önce / Sonra kartı olarak yayınla", "Karusel olarak yayınla" and "Atla" (ADR-029); the connection status, with the reconnect step when needed.
 6. **SSS:** create, edit, reorder, publish/hide, delete.
 7. **Çalışma Saatleri:** weekly hours and closed dates. (The booking settings of §12 come back with online booking.)
-8. **Hatırlatma Ayarları:** pet types and their default intervals, the WhatsApp message template, how many days before the due date pets appear, the pause after a reminder, and the anonymisation period.
+8. **Hatırlatma Ayarları:** pet types and their default intervals, the WhatsApp message template (draft text in §13), how many days before the due date pets appear, the pause after a reminder, and the anonymisation period (default 24 months).
 9. **İşletme Bilgileri:** phone, WhatsApp, email, address, map link, Instagram URL, homepage hero texts, welcome text, About text.
 10. **Hesap:** change password, sign out.
 
@@ -560,9 +599,9 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 ### Privacy (KVKK)
 
 - `/kvkk` contains a placeholder Aydınlatma Metni draft, clearly marked as requiring review by the owner (ideally with legal advice). Use placeholders for the data controller's (veri sorumlusu) legal name and contact details.
-- **Customer history (§12A):** staff inform each customer with the Aydınlatma Metni at the shop (printed or shown) before recording them; store which notice version and when.
-- **Reminder consent is separate and optional**, never bundled with the KVKK notice; store when and how it was given, and let the customer withdraw it at any time (staff untick it).
-- Collect only what's needed. A retention setting anonymises customers with no visit for a period the owner chooses; one customer's data can be exported or deleted on request.
+- **Customer history (§12A):** each customer is informed with the Aydınlatma Metni before being recorded: through the online form (§12A) or at the shop (printed or shown); store which notice version and when.
+- **Reminder consent is separate and optional**, never bundled with the KVKK notice; customers give it on the online form (§12A). Store when and how it was given and the consent-text version, and let the customer withdraw it at any time (the form, replying "İPTAL", or staff untick it).
+- Collect only what's needed. Customers with no visit for **2 years** are anonymised (setting, default 24 months); unaccepted consent requests are deleted after 30 days; one customer's data can be exported or deleted on request.
 - The KVKK notice must be extended to describe the customer history and the reminders before this feature goes live (owner + legal review).
 - Choose the Supabase region closest to Turkey (an EU region). Flag cross-border data transfer as a point for the owner to review — this is a legal question, not something to solve in code.
 
@@ -621,15 +660,14 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 
 
 **Customer history and reminders (§12A):**
-- Which pet types should exist, and what is the default interval for each (e.g. long-haired dog: every X weeks)?
-- The WhatsApp reminder message text.
-- Which employees need an account, and should they have fewer rights than the owner?
-- After how many months without a visit should a customer's data be anonymised?
+- Confirm or change the suggested pet types and intervals (§12A), and give intervals for short-haired dogs and cats.
+- Approve or change the drafted WhatsApp message (§13) and the consent wording on the online form (§12A).
+- *Answered 2026-11-23:* one admin account for now, more accounts later through the admin panel (§14); anonymise after **2 years** without a visit; customers give reminder consent **online, through a form** (§12A, ADR-030).
 - Legal review: is a "would you like to come again?" reminder a commercial electronic message (law 6563), and what does that require (consent wording, İYS registration) before reminders, and especially automatic ones, are used?
 
 **Instagram sync (ADR-029):**
-- Can the shop's Instagram account be switched to a Professional account, and will the owner authorise the app once?
-- Are all photos in the shop's posts real photos of their customers' pets that the website may show?
+- Can the shop's Instagram account be switched to a Professional account, and will the owner authorise the app once? (2026-11-23: still unknown.)
+- *Answered 2026-11-23 (developer):* the photos in the shop's own Instagram posts may be used on the website, because the shop already publishes them.
 ---
 
 ## 19. OUT OF SCOPE FOR V1
