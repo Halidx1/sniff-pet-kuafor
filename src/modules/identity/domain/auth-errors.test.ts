@@ -19,6 +19,10 @@ describe("authErrorMessage", () => {
     }
   });
 
+  it("tells an unconfirmed account apart (only sent after a correct password)", () => {
+    expect(authErrorMessage({ code: "email_not_confirmed" }, "sign-in")).toMatch(/onaylanmamış/);
+  });
+
   it("has specific messages for codes and passwords", () => {
     expect(authErrorMessage({ code: "mfa_verification_failed" }, "code")).toMatch(/Kod hatalı/);
     expect(authErrorMessage({ code: "mfa_challenge_expired" }, "code")).toMatch(/süresi doldu/);

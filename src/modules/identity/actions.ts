@@ -35,7 +35,11 @@ export async function signIn(_: FormState, formData: FormData): Promise<FormStat
     password,
     options: { captchaToken },
   });
-  if (error) return { error: authErrorMessage(error, "sign-in") };
+  if (error) {
+    // The reason, without the email or password, for the server logs (Netlify → Logs).
+    console.warn(`admin sign-in failed: ${error.code ?? error.status ?? "unknown"}`);
+    return { error: authErrorMessage(error, "sign-in") };
+  }
   // On to the 2FA step: set up the app the first time, the code every other time.
   redirect(await nextSignInStep(safeAdminNext(next)));
 }
