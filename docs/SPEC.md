@@ -281,7 +281,13 @@ Responsive photo grid of published gallery images. Button: **"Galeriyi Gör"** �
 
 Heading: **"Bizi Instagram'da Takip Edin"**
 
-Use a **static preview**: a small grid of admin-uploaded images, plus a follow button, all linking to https://www.instagram.com/sniffpetkuafor/. Do not integrate the Instagram API (tokens expire and it requires extra account setup).
+A small grid of the shop's latest Instagram posts plus a follow button, all linking to https://www.instagram.com/sniffpetkuafor/.
+
+**Instagram sync (ADR-029, changed on 2026-11-23):** the shop's own posts come in through the official Instagram API.
+- A daily server-side job fetches new posts, including every photo of a carousel, and copies the photos into our own storage in the usual sizes (Instagram's photo links expire). Each post becomes one group.
+- New posts arrive in the admin panel as **drafts** with a badge. The owner publishes each with one tap, as a before/after card ("Önce / Sonra") in the gallery or as a carousel, or skips it (e.g. product photos, announcements). Nothing appears on the site without that tap.
+- Requirements: the shop's account is a Professional account (free), and the owner authorises a Meta app once. The access token lasts 60 days and the job renews it. If the token expires anyway, the admin panel shows a warning with a "reconnect" step, and the site keeps the photos it already has.
+- Without the sync (before setup, or when it fails), the admin can still upload images by hand as before.
 
 ### Location preview
 
@@ -501,7 +507,7 @@ The owner is not technical and will mostly use a phone. The admin panel must be 
 2. **Müşteriler (§12A):** search by customer name, phone or pet name; create and edit customers and their pets; each customer's visit history. **"Ziyaret ekle"** is a quick, phone-friendly flow for the counter: pick the pet, tick the services, date (today by default), optional note; it shows the next due date. Export and delete one customer (KVKK).
 3. **Hatırlatmalar (§12A):** the reminder list with "WhatsApp'tan yaz", "Ara" and the outcome buttons.
 4. **Hizmetler:** create, edit, hide/publish, delete, reorder. Fields: name, description, category, pet type, image, per-tier price/price type/duration, add-ons. Clear **DEMO — İşletme onayı gerekli** badge on demo items.
-5. **Galeri:** upload (resized in the browser), alt text (required), caption, category, reorder, publish/hide, delete. Same for Instagram-preview images and the hero image.
+5. **Galeri:** upload (resized in the browser), alt text (required), caption, category, reorder, publish/hide, delete. Same for Instagram-preview images and the hero image. **Yeni Instagram gönderileri:** synced drafts with "Önce / Sonra kartı olarak yayınla", "Karusel olarak yayınla" and "Atla" (ADR-029); the connection status, with the reconnect step when needed.
 6. **SSS:** create, edit, reorder, publish/hide, delete.
 7. **Çalışma Saatleri:** weekly hours and closed dates. (The booking settings of §12 come back with online booking.)
 8. **Hatırlatma Ayarları:** pet types and their default intervals, the WhatsApp message template, how many days before the due date pets appear, the pause after a reminder, and the anonymisation period.
@@ -620,6 +626,10 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 - Which employees need an account, and should they have fewer rights than the owner?
 - After how many months without a visit should a customer's data be anonymised?
 - Legal review: is a "would you like to come again?" reminder a commercial electronic message (law 6563), and what does that require (consent wording, İYS registration) before reminders, and especially automatic ones, are used?
+
+**Instagram sync (ADR-029):**
+- Can the shop's Instagram account be switched to a Professional account, and will the owner authorise the app once?
+- Are all photos in the shop's posts real photos of their customers' pets that the website may show?
 ---
 
 ## 19. OUT OF SCOPE FOR V1
@@ -629,6 +639,5 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 - Automatic reminders via SMS, WhatsApp Business API or email (designed for, §12A)
 - Customer accounts and self-service cancellation
 - Languages other than Turkish
-- Instagram API feed (static preview instead)
 - Staff-level scheduling beyond a parallel-capacity number
 - Customer reviews

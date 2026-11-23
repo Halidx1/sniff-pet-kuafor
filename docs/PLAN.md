@@ -619,6 +619,19 @@ A plan for replacing the code-generated doodles with nicer illustrations, withou
    - FLUX.1 [schnell] has no transparency and keeps characters only roughly consistent between images: expect 1–2 rounds and manual clean-up.
    - If it doesn't beat the doodles, the doodles stay.
 
+#### Instagram sync for the gallery (ADR-029)
+
+Comes with the Instagram-photo gallery (grouping column on `media`), right after M2's review work.
+
+1. **Owner:** switch @sniffpetkuafor to a Professional account (Instagram → Settings → Account type and tools → Switch to professional account → "Business").
+2. **Developer + Claude:** create a Meta app (developers.facebook.com → My Apps → Create app → "Instagram API with Instagram Login"), add the shop's account as an Instagram tester; the owner accepts the invite and authorises once through a small `/admin` connect page (server-side code exchange → 60-day token stored in a `private` table). The app ID and secret go into GitHub Actions secrets.
+3. **Claude:**
+   - migration: grouping column on `media` + `source`, `source_id` (Instagram media id, unique), `permalink`, `posted_at`; a `private.instagram_connection` table (token, expiry, last sync, last error) with no API grants;
+   - `scripts/instagram-sync.mts`, run daily by a GitHub Actions workflow: refresh the token after ~30 days → fetch new posts and carousel children → download, resize with `sharp` to 480/960/1600 → upload to Storage → insert unpublished drafts per post;
+   - admin "Yeni Instagram gönderileri": the drafts with "Önce / Sonra kartı olarak yayınla", "Karusel olarak yayınla", "Atla"; alt text required (suggested from the caption); connection status and reconnect;
+   - tests: unit (post → group mapping, token-age rule), integration (sync against a recorded API response; idempotent re-runs), pgTAP (`private` table unreachable via the API).
+4. **Check during setup:** Meta allows reading the tester account's own media in development mode without app review. If not, decide whether to apply for review or keep manual uploads.
+
 ### M3 — Admin content management (Must)
 
 - **Build:**

@@ -39,6 +39,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [026](#adr-026-customer-history-replaces-online-booking-in-v1) | Customer history replaces online booking in v1 | Accepted |
 | [027](#adr-027-return-reminders-a-due-list-with-one-tap-whatsapp-automation-later) | Return reminders: due list + one-tap WhatsApp | Accepted |
 | [028](#adr-028-ai-generated-illustrations-via-cloudflare-workers-ai-flux1-schnell) | AI-generated illustrations via Cloudflare Workers AI | Proposed |
+| [029](#adr-029-sync-the-shops-instagram-posts-with-the-official-api-as-drafts) | Sync the shop's Instagram posts with the official API, as drafts | Accepted (pending setup) |
 
 ---
 
@@ -718,7 +719,7 @@ The gate passed; no fallback is needed.
 ## ADR-028: AI-generated illustrations via Cloudflare Workers AI (FLUX.1 schnell)
 
 - **Date:** 2026-11-23
-- **Status:** Proposed. Becomes Accepted after a first test batch is approved.
+- **Status:** Proposed. Becomes Accepted after a first test batch is approved. (2026-11-23: the free token works; a first test image was generated.)
 
 **Context.**
 - The developer believes a better homepage illustration can come from an AI image model than from the code-generated doodles (ADR-025).
@@ -748,3 +749,38 @@ The gate passed; no fallback is needed.
 **Consequences.**
 - Zero cost within the free quota; the token never leaves the developer's machine.
 - FLUX.1 [schnell] has no transparency and limited character consistency between images: tracing and manual layer clean-up are part of the work. The current doodles (ADR-025) remain the fallback.
+
+---
+
+## ADR-029: Sync the shop's Instagram posts with the official API, as drafts
+
+- **Date:** 2026-11-23
+- **Status:** Accepted, pending the owner's account setup and a check that Meta allows it without app review.
+
+**Context.**
+- The developer wants new posts from @sniffpetkuafor to reach the gallery without manual uploads.
+- SPEC had excluded the Instagram API (tokens expire, extra account setup).
+- Scraping Instagram breaks its terms and keeps breaking technically, so it is not an option.
+- The posts follow a pattern (a branded collage, then before, then after), but not all are about grooming (products, an announcement poster).
+
+**Decision.**
+- **API:** "Instagram API with Instagram Login" (Business Login), permission `instagram_business_basic`, reading only the shop's own media (`/me/media`, with carousel children).
+- **Setup:** the account becomes Professional (free). A Meta app in development mode with the shop's account as a tester; the owner authorises once. The short-lived token is exchanged server-side for a 60-day token.
+- **Sync:** a scheduled job (GitHub Actions, daily; it has `sharp` for resizing) that:
+  1. refreshes the token when it's older than ~30 days (the refresh must happen within 60 days or the token dies);
+  2. fetches new posts;
+  3. downloads each photo, resizes it to the existing widths (ADR-008) and uploads it to Storage (Instagram's CDN links expire);
+  4. inserts `media` rows as **unpublished drafts**, grouped per post (the same grouping column the Instagram-photo gallery needs), with the post's permalink, date and caption.
+- **Secrets:** the app secret and the token live server-side only. The token sits in a `private` table read by the job with the secret key. The app secret is a GitHub Actions secret. Nothing goes to the browser or the repo.
+- **Publishing stays human:** the admin panel lists new drafts with a badge; "Önce / Sonra kartı" (photo 1 = cover, 2 = before, 3 = after, adjustable), "Karusel" or "Atla". Alt texts are suggested from the caption and edited by the owner before publishing (alt text stays required).
+- **Failure:** if the token expires or the API fails, the job records the error, the admin panel shows a reconnect step, and the site keeps its existing photos.
+
+**Alternatives considered.**
+- *Scraping or third-party feed widgets:* breaks Instagram's terms, adds trackers and cookies, and is fragile.
+- *Auto-publish everything, or only "3-photo" posts:* off-topic posts would appear on the site; the developer chose drafts plus one tap.
+- *Manual uploads only (the old SPEC):* works, but the owner posts on Instagram anyway.
+
+**Consequences.**
+- The gallery stays current with one tap per post; the photos are hosted by us, so the site doesn't depend on Instagram's CDN.
+- Meta can change the API or require app review; then the manual upload path still works.
+- The KVKK notice should mention that the shop's public Instagram posts are shown on the website.
