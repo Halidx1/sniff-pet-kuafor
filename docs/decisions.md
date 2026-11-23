@@ -18,11 +18,11 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [004](#adr-004-local-supabase-in-docker-for-development-and-tests) | Local Supabase in Docker for development and tests | Accepted |
 | [005](#adr-005-supabase-api-keys-and-server-side-client-roles) | Supabase API keys and server-side client roles | Accepted |
 | [006](#adr-006-admin-authentication-and-session-hardening) | Admin authentication and session hardening | Accepted |
-| [007](#adr-007-double-booking-prevention-in-four-layers) | Double-booking prevention in four layers | Accepted (Could, M5) |
+| [007](#adr-007-double-booking-prevention-in-four-layers) | Double-booking prevention in four layers | Accepted, postponed with online booking (ADR-026) |
 | [008](#adr-008-browser-side-image-pipeline-without-an-optimisation-service) | Browser-side image pipeline without an optimisation service | Accepted |
 | [009](#adr-009-one-public-storage-bucket-with-unguessable-paths) | One public Storage bucket with unguessable paths | Accepted |
 | [010](#adr-010-scheduled-jobs-pg_cron-inside-the-database-github-actions-outside) | Scheduled jobs: `pg_cron` inside, GitHub Actions outside | Accepted |
-| [011](#adr-011-rate-limiting-in-postgres) | Rate limiting in Postgres | Accepted (Could, M5) |
+| [011](#adr-011-rate-limiting-in-postgres) | Rate limiting in Postgres | Accepted, postponed with online booking (ADR-026) |
 | [012](#adr-012-kvkk-notice-versioned-in-the-repository) | KVKK notice versioned in the repository | Accepted |
 | [013](#adr-013-native-html-primitives-and-an-in-house-ui-kit) | Native HTML primitives and an in-house UI kit | Accepted |
 | [014](#adr-014-colour-palette-adjustments) | Colour palette adjustments | Accepted (amended by ADR-021) |
@@ -37,6 +37,10 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [023](#adr-023-sky-blue-replaces-oat) | Sky blue replaces oat | Superseded by ADR-024 |
 | [024](#adr-024-keep-the-original-white-and-neutral-bg) | Keep the original white and neutral-bg | Accepted |
 | [025](#adr-025-hand-drawn-scroll-story-with-gsap-and-lenis) | Hand-drawn scroll story with GSAP and Lenis | Accepted |
+| [026](#adr-026-customer-history-replaces-online-booking-in-v1) | Customer history replaces online booking in v1 | Accepted |
+| [027](#adr-027-return-reminders-a-due-list-with-one-tap-whatsapp-automation-later) | Return reminders: due list + one-tap WhatsApp | Accepted |
+| [028](#adr-028-ai-generated-illustrations-via-cloudflare-workers-ai-flux1-schnell) | AI-generated illustrations via Cloudflare Workers AI | Proposed |
+| [029](#adr-029-sync-the-shops-instagram-posts-with-the-official-api-as-drafts) | Sync the shop's Instagram posts with the official API, as drafts | Accepted (pending setup) |
 
 ---
 
@@ -219,7 +223,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 ## ADR-007: Double-booking prevention in four layers
 
 - **Date:** 2026-11-11
-- **Status:** Accepted (implemented in M5, "Could")
+- **Status:** Accepted; postponed with online booking (ADR-026, 2026-11-23). Was planned for M5 ("Could").
 
 **Context.**
 - Pending requests hold their slot.
@@ -322,7 +326,7 @@ Differential tests run one shared table of scenarios through layers 2 and 3 and 
 ## ADR-011: Rate limiting in Postgres
 
 - **Date:** 2026-11-11
-- **Status:** Accepted (implemented in M5, "Could")
+- **Status:** Accepted; postponed with online booking (ADR-026, 2026-11-23). Was planned for M5 ("Could").
 
 **Context.** Booking submissions need server-side rate limiting. Serverless instances don't share memory, and we want no extra paid or host-specific services.
 
@@ -690,3 +694,124 @@ The gate passed; no fallback is needed.
 - GSAP uses its free "Standard no-charge" licence (commercial use allowed), not an OSI open-source licence.
 - Changing the drawing means editing the generator and running it again; the generated file is not edited by hand.
 
+---
+
+## ADR-026: Customer history replaces online booking in v1
+
+- **Date:** 2026-11-23
+- **Status:** Accepted. Postpones ADR-007 and ADR-011 (kept for later).
+
+**Context.**
+- The owner no longer needs online booking for v1; appointments keep arriving by phone and WhatsApp.
+- Instead they want a record of customers, their pets and the services applied (with dates), so the shop can invite customers back when a pet is due for grooming again.
+
+**Decision.**
+- New domain module **`customers`** (ADR-001) with customers, pets, pet types (default intervals), visits with service snapshots, and reminder actions. It depends on `catalog` (services) and `identity`.
+- All its tables are admin-only: RLS requires `is_admin()` (2FA), anon has no grants at all, and pgTAP checks that.
+- Online booking (SPEC §12; ADR-007 double booking, ADR-011 rate limiting) moves to "later". Its design stays in SPEC and PLAN for a future version. `/randevu-al` keeps the contact information.
+- Shop employees get ordinary admin accounts (2FA) for now; roles are an open question.
+- Customer history becomes milestone **M5 (Should)**; booking becomes "Later".
+
+**Alternatives considered.**
+- *Keep booking as M5–M6 and add history after:* builds a feature the owner doesn't want before one they do.
+- *Track customers in a spreadsheet:* no reminders, no access control, personal data in loose files.
+
+**Consequences.**
+- The site now stores real customers' personal data (names, phone numbers, pets). KVKK work becomes real: the notice is extended, retention, export and delete exist, and the data never leaves the admin-only tables.
+- Public pages are unaffected.
+
+---
+
+## ADR-027: Return reminders: a due list with one-tap WhatsApp, automation later
+
+- **Date:** 2026-11-23
+- **Status:** Accepted.
+
+**Context.**
+- Reminders must cost nothing to run in v1.
+- An automatic "would you like to come again?" message is most likely a commercial electronic message under Turkish law 6563. That probably needs the recipient's consent and İYS registration, while the exemption for existing-relationship notices covers informational messages, not promotions. This needs a legal check (SPEC §18).
+- The owner wants automation to stay possible.
+
+**Decision.**
+- **v1:** the admin panel computes who is due (last visit + the pet's own interval or its pet type's default) and lists them. **"WhatsApp'tan yaz"** opens `wa.me` on the staff member's phone with a prefilled message from the owner's template; staff press send and record the outcome.
+- Only customers with recorded reminder consent get a message button; others appear under "İzin yok" for information.
+- **Seam for later:** the reminder logic only asks a *channel* to deliver a prepared message. v1's channel returns a `wa.me` link (manual); a later channel (WhatsApp Cloud API, SMS, email) can send automatically from a scheduled job (`pg_cron`, ADR-010), after the legal checks. This is one of the "real seams" where CLAUDE.md allows a port.
+
+**Alternatives considered.**
+- *Automatic email:* most customers use WhatsApp, not email, and the same consent questions apply.
+- *Automatic WhatsApp or SMS now:* paid, needs Meta template approval and İYS registration; premature.
+
+**Consequences.**
+- Zero running cost; staff stay in control of every message.
+- Consent is stored with date and source from day one, so automation can be added without collecting it again.
+
+---
+
+## ADR-028: AI-generated illustrations via Cloudflare Workers AI (FLUX.1 schnell)
+
+- **Date:** 2026-11-23
+- **Status:** Proposed. Becomes Accepted after a first test batch is approved. (2026-11-23: the free token works; a first test image was generated.)
+
+**Context.**
+- The developer believes a better homepage illustration can come from an AI image model than from the code-generated doodles (ADR-025).
+- They have no paid ChatGPT or Gemini plan and want a free API that Claude Code can use.
+- Checked on 2026-11-23:
+  - The Gemini API's free tier has no image generation (billing required).
+  - Hugging Face's free inference credits are very small.
+  - **Cloudflare Workers AI** gives 10,000 "neurons" a day for free, with no credit card, and hosts **FLUX.1 [schnell]** (Black Forest Labs, Apache-2.0 licence, commercial use allowed). That's about 150+ images of 1024 px a day.
+
+**Decision (proposed).**
+- **Connection:** a free Cloudflare account and an API token limited to Workers AI. `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_AI_TOKEN` go in the developer's git-ignored `.env.local` (names in `.env.example`, never `NEXT_PUBLIC_`). A dev-only script, `scripts/art/generate.mjs`, calls the REST API and saves results locally; Claude Code runs it. No third-party MCP server, so no unknown code handles the token.
+- **Pipeline:**
+  1. Prompts from a committed art brief (style, palette, one subject per image, plain background).
+  2. Pick a candidate from a contact sheet.
+  3. Key out the plain background.
+  4. Trace to SVG and snap the colours to the brand palette.
+  5. Split into layers (body, fur tufts, tools) with the same class names the story already animates.
+  The GSAP timeline stays.
+- **Rules:** illustrations of generic animals only, never photo-realistic and never presented as the shop's work (CLAUDE.md, SPEC §6). Every used image is credited in `IMAGE_CREDITS.md` (model, licence, date). The model licence is re-checked on its model card before the first use.
+
+**Alternatives considered.**
+- *Paid Gemini or OpenAI image APIs:* better quality and transparent backgrounds, but they need billing.
+- *Community MCP servers:* third-party code with access to the token.
+- *AI video frames scrubbed by scroll:* heavy pages, paid, and characters drift.
+- *A commissioned illustrator:* best quality, costs money.
+
+**Consequences.**
+- Zero cost within the free quota; the token never leaves the developer's machine.
+- FLUX.1 [schnell] has no transparency and limited character consistency between images: tracing and manual layer clean-up are part of the work. The current doodles (ADR-025) remain the fallback.
+
+---
+
+## ADR-029: Sync the shop's Instagram posts with the official API, as drafts
+
+- **Date:** 2026-11-23
+- **Status:** Accepted, pending the owner's account setup and a check that Meta allows it without app review.
+
+**Context.**
+- The developer wants new posts from @sniffpetkuafor to reach the gallery without manual uploads.
+- SPEC had excluded the Instagram API (tokens expire, extra account setup).
+- Scraping Instagram breaks its terms and keeps breaking technically, so it is not an option.
+- The posts follow a pattern (a branded collage, then before, then after), but not all are about grooming (products, an announcement poster).
+
+**Decision.**
+- **API:** "Instagram API with Instagram Login" (Business Login), permission `instagram_business_basic`, reading only the shop's own media (`/me/media`, with carousel children).
+- **Setup:** the account becomes Professional (free). A Meta app in development mode with the shop's account as a tester; the owner authorises once. The short-lived token is exchanged server-side for a 60-day token.
+- **Sync:** a scheduled job (GitHub Actions, daily; it has `sharp` for resizing) that:
+  1. refreshes the token when it's older than ~30 days (the refresh must happen within 60 days or the token dies);
+  2. fetches new posts;
+  3. downloads each photo, resizes it to the existing widths (ADR-008) and uploads it to Storage (Instagram's CDN links expire);
+  4. inserts `media` rows as **unpublished drafts**, grouped per post (the same grouping column the Instagram-photo gallery needs), with the post's permalink, date and caption.
+- **Secrets:** the app secret and the token live server-side only. The token sits in a `private` table read by the job with the secret key. The app secret is a GitHub Actions secret. Nothing goes to the browser or the repo.
+- **Publishing stays human:** the admin panel lists new drafts with a badge; "Önce / Sonra kartı" (photo 1 = cover, 2 = before, 3 = after, adjustable), "Karusel" or "Atla". Alt texts are suggested from the caption and edited by the owner before publishing (alt text stays required).
+- **Failure:** if the token expires or the API fails, the job records the error, the admin panel shows a reconnect step, and the site keeps its existing photos.
+
+**Alternatives considered.**
+- *Scraping or third-party feed widgets:* breaks Instagram's terms, adds trackers and cookies, and is fragile.
+- *Auto-publish everything, or only "3-photo" posts:* off-topic posts would appear on the site; the developer chose drafts plus one tap.
+- *Manual uploads only (the old SPEC):* works, but the owner posts on Instagram anyway.
+
+**Consequences.**
+- The gallery stays current with one tap per post; the photos are hosted by us, so the site doesn't depend on Instagram's CDN.
+- Meta can change the API or require app review; then the manual upload path still works.
+- The KVKK notice should mention that the shop's public Instagram posts are shown on the website.

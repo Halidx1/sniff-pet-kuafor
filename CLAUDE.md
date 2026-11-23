@@ -29,7 +29,7 @@ Sniff Pet Kuaför is the website, admin panel and (later) appointment-request sy
 
 ```
 src/app/                 routes only: thin pages, layouts, route handlers, proxy.ts (/admin only)
-src/modules/<domain>/    identity · business · content · media · catalog · booking (Could)
+src/modules/<domain>/    identity · business · content · media · catalog · customers · booking (later)
   index.ts               the module's PUBLIC API; the only import path from outside
   domain/                pure rules and types, no I/O
   data/                  Supabase queries (repository)
@@ -44,7 +44,7 @@ docs/                    SPEC · PLAN · decisions · YONETICI_REHBERI · IMAGE_
 
 **Module rules** (enforced by `eslint-plugin-boundaries`):
 - Import other modules only via their `index.ts`.
-- Allowed dependencies: `catalog → media`; `booking → catalog, business`; every module → `identity`, `shared`.
+- Allowed dependencies: `catalog → media`; `customers → catalog`; `booking → catalog, business, customers` (later); every module → `identity`, `shared`.
 - `shared` imports no module. No cycles.
 - Each module owns its tables and migrations. Cross-module foreign keys point only down the graph.
 
