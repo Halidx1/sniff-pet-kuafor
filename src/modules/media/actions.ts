@@ -38,6 +38,9 @@ import {
 // refresh the public pages. Uploading is two calls around the browser's own PUTs:
 // requestUpload() hands out one-time addresses, addMedia() records what arrived.
 
+/** <kind>/<uuid>, as requestUpload() makes them. */
+const FOLDER = /^(gallery|hero|about|instagram)\/[0-9a-f-]{36}$/;
+
 export type UploadTargets =
   { prefix: string; targets: { width: number; url: string }[] } | { error: string };
 
@@ -62,7 +65,7 @@ export async function addMedia(input: unknown): Promise<{ error?: string }> {
   }
   const { kind, storage_prefix, ext, widths, ...details } = parsed.data;
   // Only a folder this kind of upload gets (requestUpload), holding exactly its files.
-  if (!new RegExp(`^${kind}/[0-9a-f-]{36}$`).test(storage_prefix)) {
+  if (!FOLDER.test(storage_prefix) || !storage_prefix.startsWith(`${kind}/`)) {
     return { error: "Yükleme bulunamadı. Lütfen tekrar deneyin." };
   }
   const expected = variantNames(widths, ext).sort();
