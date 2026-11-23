@@ -447,7 +447,23 @@ Staff record every visit in the admin panel: which customer, which pet, which se
 
 ### When a pet is due
 
-- Each **pet type** has a default interval in days, set by the owner (none invented: until it's set, the pet appears as "aralık belirlenmedi").
+- Each **pet type** has a default interval in days. The owner confirms or changes it in Hatırlatma Ayarları; until a type has an interval, its pets appear as "aralık belirlenmedi".
+
+**Suggested pet types and default intervals** (2026-11-23). The dog types are the coat groups seen in the shop's Instagram posts; the intervals are typical professional grooming intervals from public grooming guides (sources below), not the shop's own figures. They are seeded as **suggestions** with a "Önerilen — onaylayın" badge until the owner saves them. Where no source gave a figure, the interval stays empty.
+
+| Pet type (shown in the panel) | Examples | Seen in the shop's posts | Suggested interval | Basis |
+|---|---|---|---|---|
+| Kıvırcık tüylü köpek | Poodle, Toy Poodle, Doodle, Bichon | Yes, most posts | 35 days (5 weeks) | haircut every 4–6 weeks (Rover) |
+| Uzun ipeksi tüylü köpek | Shih Tzu, Maltese, Havanese, Lhasa Apso, Yorkshire | Yes | 35 days (5 weeks) | professional groom every 4–6 weeks for Maltese, Havanese (GoodRx) |
+| Püsküllü tüylü köpek | Cocker Spaniel, Setter | Yes | 42 days (6 weeks) | medium–long coats every 4–6 weeks (GoodRx) |
+| Yoğun çift katlı tüylü köpek | Pomeranian, Pekingese, German Shepherd, Golden Retriever, Husky | Yes | 56 days (8 weeks) | trim every 4–6 weeks, bath every 6–8, deshedding every 8–12 (iHeartDogs, Adoptapet, Rover); never shaved |
+| Kısa tüylü köpek | Labrador, Beagle, Pug, French Bulldog | No | empty | no professional interval found; weekly brushing at home |
+| Uzun tüylü kedi | Persian, Ankara kedisi, Van kedisi, Maine Coon | No (no cats in the posts) | 42 days (6 weeks) | every 4–8 weeks (Chewy); Persians 4–6 |
+| Kısa tüylü kedi | British Shorthair, tekir | No | empty | no source found |
+
+Sources (checked 2026-11-23): [Rover](https://www.rover.com/uk/blog/how-to-brush-dog), [GoodRx](https://www.goodrx.com/pet-health/dog/how-often-should-you-groom-your-dog), [iHeartDogs](https://iheartdogs.com/how-often-do-you-need-to-groom-a-pomeranian/), [Adoptapet](https://www.adoptapet.com/blog/adoption/how-often-should-i-groom-my-dog), [Rover (double coats)](https://www.rover.com/blog/how-often-should-i-groom-my-dog), [Chewy](https://www.chewy.com/education/cat/grooming/care-long-haired-cat).
+
+Pet type is about the coat; the size tiers for prices (§10) stay separate.
 - Staff can set a different interval for a single pet; it wins over the type's default.
 - Due date = date of the pet's last visit + interval. The list shows pets from a few days before the due date (setting) and overdue ones.
 - A pet isn't shown again for a while after a reminder (setting), or while it is snoozed.
@@ -644,7 +660,7 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 
 
 **Customer history and reminders (§12A):**
-- Which pet types should exist, and what is the default interval for each (e.g. long-haired dog: every X weeks)?
+- Confirm or change the suggested pet types and intervals (§12A), and give intervals for short-haired dogs and cats.
 - Approve or change the drafted WhatsApp message (§13) and the consent wording on the online form (§12A).
 - *Answered 2026-11-23:* one admin account for now, more accounts later through the admin panel (§14); anonymise after **2 years** without a visit; customers give reminder consent **online, through a form** (§12A, ADR-030).
 - Legal review: is a "would you like to come again?" reminder a commercial electronic message (law 6563), and what does that require (consent wording, İYS registration) before reminders, and especially automatic ones, are used?

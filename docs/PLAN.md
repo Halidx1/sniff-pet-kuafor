@@ -276,7 +276,7 @@ Personal data: every table is admin-only. RLS `using/with check (private.is_admi
   - `kvkk_notice_version` + `kvkk_informed_at` (required)
   - `reminder_consent bool default false`, `reminder_consent_at?`, `reminder_consent_source ∈ {online_form, in_person, whatsapp, phone}`, `reminder_consent_text_version?`: a check requires the date and source when consent is true
   - `archived_at?`
-- **`pet_types` (owner-defined, ordered):** `species ∈ {cat, dog}`, `name` ("Uzun tüylü köpek" …), `default_interval_days 7–365?` (empty until the owner sets it: no invented intervals), `sort_order`.
+- **`pet_types` (owner-editable, ordered):** `species ∈ {cat, dog}`, `name`, `examples?` (breeds shown as a hint), `default_interval_days 7–365?`, `confirmed_at?`, `sort_order`. Seeded with the 7 suggested types of SPEC §12A (`confirmed_at` null → "Önerilen — onaylayın" badge; saving the row sets it). Types without a sourced interval stay empty.
 - **`pets`:** `customer_id → customers (on delete cascade)`, `name`, `species`, `pet_type_id? → pet_types`, `breed?`, `notes?`, `reminder_interval_days 7–365?` (manual override), `archived_at?`.
 - **`visits`:** `pet_id → pets (cascade)`, `visited_on date` (not in the future), `note?`, `price_paid_try numeric(10,2)?`, `created_by`.
 - **`visit_services`:** `visit_id → visits (cascade)`, `service_id? → catalog.services (on delete set null)`, `service_name` (a snapshot, so renaming or deleting a service never changes history).
