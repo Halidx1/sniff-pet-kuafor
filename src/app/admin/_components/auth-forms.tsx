@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 // Type-only: erased at build time, so no server code reaches the browser.
 import type { FormState, SetupState } from "@/modules/identity";
 import { Button } from "@/shared/ui/button";
-import { Field, FormMessage, SubmitButton } from "./form-parts";
+import { Field, FormMessage, SubmitButton } from "@/shared/ui/form";
 import { Turnstile } from "./turnstile";
 
 type Action<S> = (state: S, formData: FormData) => Promise<S>;

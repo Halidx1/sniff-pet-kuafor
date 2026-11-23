@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 /** Sections of the panel (SPEC §14). Later M3 PRs add their entries here. */
 const SECTIONS = [
   { href: "/admin", label: "Panel" },
+  { href: "/admin/isletme-bilgileri", label: "İşletme Bilgileri" },
+  { href: "/admin/metinler", label: "Metinler" },
   { href: "/admin/hesap", label: "Hesap" },
 ];
 

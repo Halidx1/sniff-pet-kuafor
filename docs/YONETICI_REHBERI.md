@@ -51,3 +51,24 @@ Bundan sonra her girişte bu uygulamadaki kodu gireceksiniz.
 - adınızı ve e-posta adresinizi görürsünüz,
 - iki adımlı doğrulamanın açık olduğunu görürsünüz,
 - **Şifre değiştir** ile şifrenizi yenileyebilirsiniz.
+
+## 5. İşletme Bilgileri
+
+Üst menüden **İşletme Bilgileri**'ni açın. Burada sitenin her yerinde görünen bilgileri değiştirirsiniz:
+
+- **İşletme adı** ve **slogan** (slogan sitenin alt kısmında görünür),
+- **Telefon** ve **WhatsApp** numarası: istediğiniz gibi yazabilirsiniz (ör. `0532 123 45 67`), site kendisi düzenler. WhatsApp düğmeleri bu numarayı kullanır.
+- **E-posta** ve **Instagram** profil bağlantısı,
+- **Adres**, **Google Haritalar bağlantısı** ("Yol Tarifi Al" düğmesi bunu açar) ve haritadaki pati işaretinin yeri (**enlem / boylam**).
+
+Bir bilgiyi boş bırakırsanız sitede o bilgi hiç gösterilmez. **Kaydet**'e bastıktan sonra değişiklikler sitede birkaç saniye içinde görünür. Hatalı bir alan olursa kırmızıyla işaretlenir ve hiçbir şey kaydedilmez; yazdıklarınız silinmez.
+
+## 6. Metinler
+
+Üst menüden **Metinler**'i açın:
+
+- **Anasayfa girişi:** en üstteki büyük başlık, alt başlık ve kısa giriş metni.
+- **Hoş geldiniz:** anasayfada fotoğrafın yanındaki metin.
+- **Hakkımızda sayfası:** paragrafların arasına bir boş satır bırakın. `## ` ile başlayan bir satır ara başlık, `- ` ile başlayan satırlar madde işareti olur.
+
+**Kaydet**'e bastıktan sonra metinler sitede birkaç saniye içinde güncellenir.
