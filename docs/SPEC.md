@@ -667,7 +667,7 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 
 **Instagram sync (ADR-029):**
 - Can the shop's Instagram account be switched to a Professional account, and will the owner authorise the app once? (2026-11-23: still unknown.)
-- Are all photos in the shop's posts real photos of their customers' pets that the website may show?
+- *Answered 2026-11-23 (developer):* the photos in the shop's own Instagram posts may be used on the website, because the shop already publishes them.
 ---
 
 ## 19. OUT OF SCOPE FOR V1
