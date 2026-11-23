@@ -11,7 +11,7 @@ This plan covers the eight items SPEC §0 asks for (sections 1–8). It adds a *
 ### What changed from revision 1 (your feedback)
 
 - **Domain modules:** the code is a **modular monolith split by domain**, not by layer. SOLID is applied where it pays off (§1.3).
-- **Priorities:** **M0–M4 is the MVP (Must).** Booking and appointments move to **M5–M6 (Could)**.
+- **Priorities:** **M0–M4 is the MVP (Must).** **M5 (Should)** is the customer history with return reminders (ADR-026). Online booking is postponed to **later** (was M5–M6, Could).
 - **Docker:** a **local Supabase stack in Docker** is the default dev database, so every branch runs the full test suite locally and in CI.
 - **2FA required for every admin.** The database itself refuses admin writes without it.
 - **Security reconsidered** as a threat model, with a test for each mitigation.
@@ -265,7 +265,32 @@ The GraphQL endpoint is **disabled** because it's unused.
 
 **Indexes:** content tables hold dozens of rows, so primary keys suffice. The one index added is `audit_log (table_name, row_id, at)`.
 
-### Tables: booking module (Could, M5–M6)
+### Tables: customers module (Should, M5, ADR-026)
+
+Personal data: every table is admin-only. RLS `using/with check (private.is_admin())` for `authenticated`, **no grants to `anon` at all**, and pgTAP checks both. Audit triggers as everywhere.
+
+- **`customers`:**
+  - `full_name` (1–120)
+  - `phone_e164`, `whatsapp_e164` (`+90…`, as in `business_profile`), `email?`
+  - `notes ≤ 1000`
+  - `kvkk_notice_version` + `kvkk_informed_at` (required)
+  - `reminder_consent bool default false`, `reminder_consent_at?`, `reminder_consent_source ∈ {in_person, whatsapp, phone}`: a check requires the date and source when consent is true
+  - `archived_at?`
+- **`pet_types` (owner-defined, ordered):** `species ∈ {cat, dog}`, `name` ("Uzun tüylü köpek" …), `default_interval_days 7–365?` (empty until the owner sets it: no invented intervals), `sort_order`.
+- **`pets`:** `customer_id → customers (on delete cascade)`, `name`, `species`, `pet_type_id? → pet_types`, `breed?`, `notes?`, `reminder_interval_days 7–365?` (manual override), `archived_at?`.
+- **`visits`:** `pet_id → pets (cascade)`, `visited_on date` (not in the future), `note?`, `price_paid_try numeric(10,2)?`, `created_by`.
+- **`visit_services`:** `visit_id → visits (cascade)`, `service_id? → catalog.services (on delete set null)`, `service_name` (a snapshot, so renaming or deleting a service never changes history).
+- **`reminders`:** `pet_id → pets (cascade)`, `due_on`, `channel ∈ {whatsapp_manual}` (later: `whatsapp_api`, `sms`, `email`), `outcome ∈ {sent, booked, declined, no_reply, snoozed}`, `snooze_until?`, `message` (snapshot), `acted_at`, `acted_by`.
+- **`reminder_settings` (1 row):** `message_template` (placeholders `{musteri}`, `{dost}`, `{hizmet}`), `lead_days`, `pause_days`, `anonymise_after_months?`.
+- **Due computation:** a pure function in `customers/domain/due.ts` (unit-tested):
+  - interval = the pet's own interval, else its type's default, else "not set";
+  - due = last `visited_on` + interval;
+  - not listed while snoozed, archived, or within `pause_days` of the last reminder.
+  The repository reads the last visit per pet in one query (`distinct on (pet_id)`); the list is small enough to compute in the app.
+- **Channel seam (ADR-027):** `ReminderChannel` with `prepare(reminder) → { kind: "link", url }`. v1 has `whatsappLinkChannel` (`wa.me` + message). A later automatic channel adds `send()` plus a `pg_cron` job, behind consent and the legal checks.
+- **KVKK jobs:** monthly `pg_cron` anonymisation of customers with no visit for `anonymise_after_months` (name → "Anonim", contacts nulled, notes cleared; visits stay for statistics). Per-customer export (CSV) and hard delete as admin actions.
+
+### Tables: booking module (Later: postponed with online booking, ADR-026)
 
 These ship with the booking module's own migrations, not in the MVP.
 
@@ -344,7 +369,7 @@ These ship with the booking module's own migrations, not in the MVP.
 | `/galeri` | Grid + `<dialog>` lightbox, Kedi/Köpek filter | media |
 | `/sss` | `<details>` accordion | content |
 | `/iletisim` | Address, lazy-loaded map, phone, WhatsApp, Instagram, opening hours (once entered), "Yol Tarifi Al" | business |
-| `/randevu-al` | **MVP:** friendly "online randevu yakında" message with phone, WhatsApp and Instagram. **Could (M5):** the booking wizard (`?hizmet=<id>`) | business (+ booking) |
+| `/randevu-al` | **MVP:** friendly "online randevu yakında" message with phone, WhatsApp and Instagram. **Later (postponed booking):** the booking wizard (`?hizmet=<id>`) | business (+ booking) |
 | `/kvkk` | Draft Aydınlatma Metni, clearly marked | content |
 | `not-found.tsx` | Turkish 404 | — |
 | *(every page)* | Closure banner, e.g. "12 Aralık Perşembe günü kapalıyız. …", shown while a closure with a public note is upcoming or active | business |
@@ -393,7 +418,7 @@ docs/ SPEC · PLAN · decisions.md · YONETICI_REHBERI · IMAGE_CREDITS
 
 ---
 
-## 4. Availability and booking algorithm (Could: M5–M6, designed now so the MVP doesn't block it)
+## 4. Availability and booking algorithm (Later: postponed with online booking, ADR-026; kept so nothing blocks it)
 
 **Inputs** (all editable, none invented):
 - From `business`: opening intervals and closures.
@@ -476,7 +501,7 @@ The owner can delete or shorten a closure; those times become bookable again at 
 
 ---
 
-## 6. Milestones (MoSCoW: **M0–M4 = Must, the MVP launch**; **M5–M6 = Could, booking**)
+## 6. Milestones (MoSCoW: **M0–M4 = Must, the MVP launch**; **M5 = Should, customer history**; online booking = later)
 
 **How every branch is tested:**
 
@@ -573,6 +598,27 @@ Found by the developer while reviewing the M2 deploy preview; built on the same 
   - [ ] No white surfaces left; axe still reports zero contrast violations
   - [ ] Lighthouse ≥ 90 on `/` with the map
 
+#### Homepage art via a free AI image API (proposed, ADR-028)
+
+A plan for replacing the code-generated doodles with nicer illustrations, without paid plans.
+
+1. **Connect (developer, once, ~10 minutes):**
+   - Create a free Cloudflare account (no card). Copy the account ID from the dashboard.
+   - Create an API token: *My Profile → API Tokens → Create token → "Workers AI"* template (Workers AI Read + Edit).
+   - Put both in `.env.local` (git-ignored) as `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_AI_TOKEN`; Claude adds the names to `.env.example`.
+2. **Generator (Claude):** `scripts/art/generate.mjs <asset> [--seeds n]` calls `@cf/black-forest-labs/flux-1-schnell` over the REST API, saves candidates to `sources/art/candidates/` (git-ignored) and prints the estimated free-quota use. Prompts live in `scripts/art/brief.md`: one style paragraph for every asset (flat illustration, thick navy outlines, caramel and cream fills, plain cream background, no text) plus one line per asset (scruffy dog, groomed dog, cat, brush, scissors, fur tufts, paw).
+3. **Pick (developer):** Claude renders a contact sheet of the candidates; the developer picks per asset, or asks for another round.
+4. **Turn into layers (Claude):**
+   - key out the plain background;
+   - trace to SVG (a dev-only tracer) and snap the colours to the palette;
+   - split into the layers the story already animates (`hs-dog`, `hs-strand-*`, `hs-clump-*`, `hs-brush` …);
+   - check the size (target: SVG data similar to today's ~90 KB).
+5. **Swap:** `story-scene.tsx` renders the new layers; the GSAP timeline and its tests stay. Credit in `IMAGE_CREDITS.md`; ADR-028 → Accepted.
+6. **Limits:**
+   - About 150+ images a day are free.
+   - FLUX.1 [schnell] has no transparency and keeps characters only roughly consistent between images: expect 1–2 rounds and manual clean-up.
+   - If it doesn't beat the doodles, the doodles stay.
+
 ### M3 — Admin content management (Must)
 
 - **Build:**
@@ -622,7 +668,35 @@ Found by the developer while reviewing the M2 deploy preview; built on the same 
   - [ ] Running the backup workflow puts an encrypted file in the private repo, and decrypt + restore into local works
   - [ ] Lighthouse ≥ 90; E2E green against prod data in read-only mode
 
-### M5 — Booking engine and customer flow (Could)
+### M5 — Customer history and return reminders (Should, ADR-026, ADR-027)
+
+- **Before building:** the owner answers the SPEC §18 questions (pet types and intervals, message text, employee accounts, anonymisation period), and the extended KVKK notice is reviewed (legally, ideally).
+- **Build:**
+  - `customers` module: migrations, RLS without any anon grant, audit, types (tables in §2)
+  - Domain: due computation, message template filling, Turkish phone input to E.164, CSV export (formula-injection safe)
+  - Admin **Müşteriler**: search (name, phone, pet), customer and pet forms (KVKK-informed checkbox; separate reminder-consent checkbox with source), visit history
+  - **"Ziyaret ekle"**: a phone-first flow (pet → services → date → note) that shows the next due date
+  - **Hatırlatmalar**: Bu hafta / Gecikmiş / İzin yok; "WhatsApp'tan yaz" (`wa.me` + template), "Ara", outcomes (randevu aldı, istemiyor, cevap yok, ertele)
+  - **Hatırlatma Ayarları**: pet types and intervals, template, lead and pause days, anonymisation period
+  - Dashboard count; per-customer export and delete; monthly anonymisation job
+  - Employee accounts as ordinary 2FA admins; owner's guide section
+  - KVKK notice v2 (customer history and reminders)
+- **Tests:**
+  - Unit (due rules, template, phone, CSV) ≥ 90 %
+  - Integration: every action without a session is rejected; repository round-trips
+  - pgTAP: anon can't read or write any `customers` table; an admin without 2FA sees nothing; the consent check; cascades
+  - E2E: add a customer + pet + visit → the pet shows up as due → the WhatsApp link carries the filled message; the outcome hides it for the pause period
+- **Test (manual, on a phone):**
+  - [ ] Recording a visit at the counter takes under a minute
+  - [ ] A customer without consent never gets a message button
+  - [ ] Export and delete of one customer work
+  - [ ] Nothing about customers is reachable without logging in (try the REST API with the anon key: empty or error)
+
+### Later — Online booking (postponed, ADR-026)
+
+Kept as designed, for a future version. It was M5–M6 ("Could").
+
+#### Booking engine and customer flow
 
 - **Build:**
   - Booking module migrations
@@ -639,7 +713,7 @@ Found by the developer while reviewing the M2 deploy preview; built on the same 
   - [ ] Two tabs submitting the same slot: the second gets the "az önce doldu" message
   - [ ] The row is `pending` with its snapshot
 
-### M6 — Appointment management and notifications (Could)
+#### Appointment management and notifications
 
 - **Build:**
   - List, filters, day and week views
@@ -763,7 +837,7 @@ SPEC §18 stays; the site uses placeholders until it's answered. New ones:
 - Conventional Commits, e.g. `feat(catalog): add tier price editor`.
 - I push branches and open PRs with `gh`, each with a test checklist; you merge feature PRs in the GitHub UI with **"Squash and merge"**.
 - Release PRs (`main → production`) are merged with **"Create a merge commit"**, so `production` keeps `main`'s commits and later releases don't replay old changes (ADR-019).
-- Work is tracked with GitHub milestones (M1–M6), one issue per deliverable and a public project board; commits say `Refs #n` and the PR says `Closes #n` (ADR-019).
+- Work is tracked with GitHub milestones (M1–M5, plus "Later" for the postponed booking), one issue per deliverable and a public project board; commits say `Refs #n` and the PR says `Closes #n` (ADR-019).
 
 **History rewriting (now allowed, per your answer):**
 - Only on **my own, unmerged feature branches**, e.g. tidying commits before review.
@@ -801,7 +875,7 @@ Add the live site link and you have the full picture. The private repo holds onl
   - restore drill done
   - no demo content public
   - 2FA enforced
-- **Booking launch gate (M5–M6, later):** `booking_enabled` stays off until the owner signs off on hours, services and durations.
+- **Booking launch gate (later, postponed):** `booking_enabled` stays off until the owner signs off on hours, services and durations.
 
 ---
 

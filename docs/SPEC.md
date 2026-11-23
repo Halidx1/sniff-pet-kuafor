@@ -64,8 +64,8 @@ Do not write code until I approve the plan. After approval, save it as `docs/PLA
 **Sniff Pet Kuaför** is a cat and dog grooming business in Gölbaşı, Ankara, Turkey. We are building three things:
 
 1. **A public website** — Turkish only, mobile-first, with the feel of a carefully designed boutique grooming brand, not a generic pet-shop template.
-2. **An admin panel at `/admin`** — the non-technical owner logs in (usually from a phone) and manages services, prices, photos, FAQ, business information, working hours and appointment requests without touching code.
-3. **An online appointment request system** — customers request a slot; the owner approves or rejects it.
+2. **An admin panel at `/admin`** — the non-technical owner logs in (usually from a phone) and manages services, prices, photos, FAQ, business information, working hours and the customer history without touching code.
+3. **A customer history with return reminders** (admin only) — staff record customers, pets and the services applied with dates; the panel lists pets due for their next grooming so the shop can invite them back with one tap (§12A). *An online appointment request system (§12) is postponed to a later version.*
 
 Every change made in `/admin` must appear on the public site automatically within seconds, without a redeploy.
 
@@ -169,6 +169,10 @@ Friendly and welcoming; professional and trustworthy; modern and slightly playfu
 Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, issue #64), which falls back to a static picture. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
 
 Build a small, reusable component set once (Button, Card, SectionHeading, Badge, etc.) and use it everywhere.
+
+### Illustrations
+
+The homepage story uses illustrated characters (§8). They may be drawn by hand, generated from shapes in code, or generated with an AI image model (ADR-028), as long as they are clearly illustrations of generic animals: never photo-realistic, never presented as the shop's work, staff or customers. Every illustration source is credited in `docs/IMAGE_CREDITS.md`.
 
 ### Photography
 
@@ -354,9 +358,11 @@ Button: **"Fiyat Bilgisi Al"** → WhatsApp (if set), otherwise `/iletisim`.
 
 ---
 
-## 12. APPOINTMENT REQUEST SYSTEM
+## 12. APPOINTMENT REQUEST SYSTEM — POSTPONED (later, ADR-026)
 
-This is the most important feature. It must create real records with real availability — not a decorative form.
+> **Postponed on 2026-11-23.** Online booking is not part of v1; the customer history and return reminders in §12A take its place. `/randevu-al` keeps showing phone, WhatsApp and Instagram. The requirements below are kept for a later version.
+
+It must create real records with real availability — not a decorative form.
 
 ### Customer flow (`/randevu-al`)
 
@@ -420,16 +426,55 @@ Also show a short reference code (e.g. `SP-4821`) the customer can mention when 
 
 ---
 
+## 12A. CUSTOMER HISTORY AND RETURN REMINDERS (replaces online booking in v1, ADR-026)
+
+Staff record every visit in the admin panel: which customer, which pet, which services, when. From that history the panel shows which pets are **due** for their next grooming, so staff can invite the customer back with one tap (§13). Online booking (§12) is postponed.
+
+### What is recorded (admin only, never public)
+
+- **Customer:** full name, phone, WhatsApp number (usually the same), optional email, notes.
+  - KVKK: the date and version of the Aydınlatma Metni the customer was informed with (§16), recorded when staff create the customer.
+  - **Reminder consent**, separate and optional: whether the customer wants return reminders, when and how they agreed (in person, WhatsApp, phone). No consent → never reminded.
+- **Pet:** name, species (Kedi / Köpek), **pet type** (e.g. "Uzun tüylü köpek", "Kısa tüylü kedi"; the list is defined by the owner), breed (optional), notes (e.g. health or behaviour), optional **own reminder interval**.
+- **Visit:** pet, date, services applied (picked from the services list, with a snapshot of each name), optional note. Price paid is optional.
+- **Reminder actions:** when a reminder was sent, by whom, through which channel, and the outcome: randevu aldı / istemiyor / cevap yok / ertelendi.
+
+### When a pet is due
+
+- Each **pet type** has a default interval in days, set by the owner (none invented: until it's set, the pet appears as "aralık belirlenmedi").
+- Staff can set a different interval for a single pet; it wins over the type's default.
+- Due date = date of the pet's last visit + interval. The list shows pets from a few days before the due date (setting) and overdue ones.
+- A pet isn't shown again for a while after a reminder (setting), or while it is snoozed.
+
+### Reminder list (admin)
+
+- Tabs: **Bu hafta**, **Gecikmiş**, **İzin yok** (due, but the customer hasn't agreed to reminders: shown for information only, no message button).
+- Each row: pet and customer name, pet type, last visit and services, due date.
+  - **"WhatsApp'tan yaz"** opens `wa.me/<number>` with a prefilled, editable Turkish message from a template the owner edits (placeholders for customer name, pet name, last service). The owner presses send in WhatsApp.
+  - **"Ara"** (`tel:` link).
+  - Outcome buttons: Randevu aldı, İstemiyor, Cevap yok, Ertele.
+- The panel's dashboard shows how many pets are due this week.
+
+### Later: automatic reminders
+
+Designed for, not built in v1: the same reminder can later be sent automatically (WhatsApp Business API, SMS or email) by a scheduled job, for consenting customers only, once the legal checks are done (§18: İYS registration and commercial-message rules) and the owner accepts the running costs.
+
+### Customer data rights (KVKK)
+
+- Export one customer's data (CSV) on request.
+- Delete one customer completely (pets, visits and reminders with them), with confirmation.
+- Anonymise customers with no visit for a period the owner chooses (§16).
+
+---
+
 ## 13. NOTIFICATIONS
 
 Must cost nothing and work without a domain.
 
-- **Owner:** the admin dashboard highlights pending requests (count badge). If email is configured, send the owner an email for each new request.
-- **Customer:** on each appointment in the admin panel, provide:
-  - **"WhatsApp'tan Bildir"** — opens `wa.me/<customer number>` with a prefilled, editable Turkish message matching the status (approved with date/time and address, or rejected with an invitation to choose another time).
-  - **"Ara"** — a `tel:` link.
-  - If the customer gave an email and email is configured, send an automatic Turkish email on approval/rejection.
-- SMS and the WhatsApp Business API are out of scope (paid).
+- **Return reminders (v1, ADR-027):** staff send them from the reminder list (§12A) with **"WhatsApp'tan yaz"**: `wa.me/<customer number>` with a prefilled, editable Turkish message from the owner's template, sent from the shop's own WhatsApp. Only customers who agreed to reminders get the button.
+- **Ready for automation later:** the reminder logic doesn't depend on how a message is delivered (a "channel" seam), so an automatic channel (WhatsApp Business API, SMS, email) can be added later without changing the rest, after the legal checks in §18.
+- **Booking notifications** (approve/reject messages) belong to the postponed booking system (§12).
+- SMS and the WhatsApp Business API are out of scope for v1 (paid, and they need İYS registration and consent handling).
 
 ---
 
@@ -439,7 +484,7 @@ The owner is not technical and will mostly use a phone. The admin panel must be 
 
 ### Access
 
-- Supabase Auth with email + password. No public sign-up; accounts are created manually (owner and developer).
+- Supabase Auth with email + password. No public sign-up; accounts are created manually (owner, developer and, for the customer history, shop employees). In v1 every account has the same rights; roles are an open question (§18).
 - **Two-factor authentication (TOTP authenticator app) is mandatory for every admin account.**
   - It is enforced in the database: admin RLS requires an `aal2` session.
   - First login forces enrolment.
@@ -452,20 +497,22 @@ The owner is not technical and will mostly use a phone. The admin panel must be 
 
 ### Sections
 
-1. **Panel (dashboard):** today's and upcoming appointments, pending requests, quick links, and the **"Acil kapanış"** quick action (§12).
-2. **Randevular:** list and day/week calendar views; filter by status and date. Approve, reject, cancel, mark completed or no-show; edit date/time (with the same conflict check); internal notes. **Manually create appointments** for requests that arrive by phone, WhatsApp, Instagram or walk-in, with a `source` field — so the calendar is the single source of truth. CSV export.
-3. **Hizmetler:** create, edit, hide/publish, delete, reorder. Fields: name, description, category, pet type, image, per-tier price/price type/duration, add-ons. Clear **DEMO — İşletme onayı gerekli** badge on demo items.
-4. **Galeri:** upload (resized in the browser), alt text (required), caption, category, reorder, publish/hide, delete. Same for Instagram-preview images and the hero image.
-5. **SSS:** create, edit, reorder, publish/hide, delete.
-6. **Çalışma Saatleri ve Randevu Ayarları:** weekly hours, closed dates, slot granularity, buffer, capacity, minimum notice, maximum days ahead, auto-expiry, and the `booking_enabled` switch.
-7. **İşletme Bilgileri:** phone, WhatsApp, email, address, map link, Instagram URL, homepage hero texts, welcome text, About text.
-8. **Hesap:** change password, sign out.
+1. **Panel (dashboard):** pets due for a reminder this week, today's visits, quick links ("Ziyaret ekle", "Yeni müşteri"), and the **"Acil kapanış"** quick action.
+2. **Müşteriler (§12A):** search by customer name, phone or pet name; create and edit customers and their pets; each customer's visit history. **"Ziyaret ekle"** is a quick, phone-friendly flow for the counter: pick the pet, tick the services, date (today by default), optional note; it shows the next due date. Export and delete one customer (KVKK).
+3. **Hatırlatmalar (§12A):** the reminder list with "WhatsApp'tan yaz", "Ara" and the outcome buttons.
+4. **Hizmetler:** create, edit, hide/publish, delete, reorder. Fields: name, description, category, pet type, image, per-tier price/price type/duration, add-ons. Clear **DEMO — İşletme onayı gerekli** badge on demo items.
+5. **Galeri:** upload (resized in the browser), alt text (required), caption, category, reorder, publish/hide, delete. Same for Instagram-preview images and the hero image.
+6. **SSS:** create, edit, reorder, publish/hide, delete.
+7. **Çalışma Saatleri:** weekly hours and closed dates. (The booking settings of §12 come back with online booking.)
+8. **Hatırlatma Ayarları:** pet types and their default intervals, the WhatsApp message template, how many days before the due date pets appear, the pause after a reminder, and the anonymisation period.
+9. **İşletme Bilgileri:** phone, WhatsApp, email, address, map link, Instagram URL, homepage hero texts, welcome text, About text.
+10. **Hesap:** change password, sign out.
 
 Every mutation triggers on-demand revalidation of the affected public pages so changes appear within seconds. Store `created_at`, `updated_at` and `updated_by` on editable records.
 
 ### Owner's guide
 
-Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging in, adding a service, changing a price, uploading photos, approving an appointment and turning online booking on. Plain language, no technical terms.
+Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging in, adding a service, changing a price, uploading photos, adding a customer and a visit, and sending reminders. Plain language, no technical terms.
 
 ---
 
@@ -507,8 +554,10 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 ### Privacy (KVKK)
 
 - `/kvkk` contains a placeholder Aydınlatma Metni draft, clearly marked as requiring review by the owner (ideally with legal advice). Use placeholders for the data controller's (veri sorumlusu) legal name and contact details.
-- Store which notice version the customer acknowledged, and when.
-- Collect only what's needed. Add a retention setting that anonymises customer personal data on past appointments after a period the owner chooses.
+- **Customer history (§12A):** staff inform each customer with the Aydınlatma Metni at the shop (printed or shown) before recording them; store which notice version and when.
+- **Reminder consent is separate and optional**, never bundled with the KVKK notice; store when and how it was given, and let the customer withdraw it at any time (staff untick it).
+- Collect only what's needed. A retention setting anonymises customers with no visit for a period the owner chooses; one customer's data can be exported or deleted on request.
+- The KVKK notice must be extended to describe the customer history and the reminders before this feature goes live (owner + legal review).
 - Choose the Supabase region closest to Turkey (an EU region). Flag cross-border data transfer as a point for the owner to review — this is a legal question, not something to solve in code.
 
 ---
@@ -538,10 +587,14 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 - **M3 — Admin content management:** auth with mandatory 2FA, business info, opening hours and closures (incl. "Acil kapanış"), services and prices, images, FAQ, texts, revalidation, first draft of the owner's guide.
 - **M4 — MVP launch readiness:** SEO, accessibility and performance pass, security review (incl. OWASP ZAP baseline), production project and deployment, encrypted backups, final README and owner's guide.
 
-**Could: online booking**
+**Should: customer history (ADR-026)**
 
-- **M5 — Booking engine and customer flow:** availability settings, slot engine with tests, booking wizard, spam protection, database-level double-booking prevention.
-- **M6 — Appointment management and notifications:** admin appointment management (including manual entries and the closure-impact flow), WhatsApp/email notifications, CSV export, expiry and anonymisation.
+- **M5 — Customer history and return reminders:** customers, pets, visits and pet types with intervals; the reminder list with one-tap WhatsApp; consent and KVKK tools (export, delete, anonymisation); dashboard count.
+
+**Later: online booking (postponed, §12)**
+
+- **Booking engine and customer flow:** availability settings, slot engine with tests, booking wizard, spam protection, database-level double-booking prevention.
+- **Appointment management and notifications:** admin appointment management (including manual entries and the closure-impact flow), WhatsApp/email notifications, CSV export, expiry and anonymisation.
 
 ---
 
@@ -560,12 +613,20 @@ Write `docs/YONETICI_REHBERI.md`: a short Turkish guide with steps for logging i
 11. Domain name preference.
 12. The business's legal name and contact details for the KVKK notice.
 
+
+**Customer history and reminders (§12A):**
+- Which pet types should exist, and what is the default interval for each (e.g. long-haired dog: every X weeks)?
+- The WhatsApp reminder message text.
+- Which employees need an account, and should they have fewer rights than the owner?
+- After how many months without a visit should a customer's data be anonymised?
+- Legal review: is a "would you like to come again?" reminder a commercial electronic message (law 6563), and what does that require (consent wording, İYS registration) before reminders, and especially automatic ones, are used?
 ---
 
 ## 19. OUT OF SCOPE FOR V1
 
+- Online booking (postponed, §12)
 - Online payments and deposits
-- SMS and WhatsApp Business API messaging
+- Automatic reminders via SMS, WhatsApp Business API or email (designed for, §12A)
 - Customer accounts and self-service cancellation
 - Languages other than Turkish
 - Instagram API feed (static preview instead)
