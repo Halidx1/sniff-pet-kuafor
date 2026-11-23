@@ -29,8 +29,10 @@ select results_eq(
         and has_function_privilege(r.rolname, p.oid, 'execute')
         and has_schema_privilege(r.rolname, n.nspname, 'usage')
       order by 1, 2 $$,
-  $$ values ('current_admin_name()', 'authenticated'), ('health_check()', 'anon'), ('private.is_admin()', 'authenticated') $$,
-  'only health_check() (anon), private.is_admin() and current_admin_name() (authenticated) are executable'
+  $$ values ('current_admin_name()', 'authenticated'), ('health_check()', 'anon'),
+            ('media_group(uuid[],text)', 'authenticated'), ('media_reorder(uuid[])', 'authenticated'),
+            ('private.is_admin()', 'authenticated') $$,
+  'only health_check() (anon) and the listed admin functions (authenticated) are executable'
 );
 
 select ok(not has_schema_privilege('anon', 'private', 'usage'), 'anon cannot use the private schema');

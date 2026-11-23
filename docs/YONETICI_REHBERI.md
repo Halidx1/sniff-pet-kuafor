@@ -72,3 +72,27 @@ Bir bilgiyi boş bırakırsanız sitede o bilgi hiç gösterilmez. **Kaydet**'e 
 - **Hakkımızda sayfası:** paragrafların arasına bir boş satır bırakın. `## ` ile başlayan bir satır ara başlık, `- ` ile başlayan satırlar madde işareti olur.
 
 **Kaydet**'e bastıktan sonra metinler sitede birkaç saniye içinde güncellenir.
+
+## 7. Fotoğraflar
+
+Üst menüden **Fotoğraflar**'ı açın. Üstteki düğmelerle listeyi seçin:
+
+- **Galeri:** galeri sayfası ve anasayfadaki galeri kartları,
+- **Anasayfa fotoğrafı:** anasayfanın en üstündeki fotoğraf (yayındaki ilk fotoğraf görünür),
+- **Hakkımızda:** Hakkımızda sayfasındaki fotoğraf (yayındaki ilk fotoğraf görünür),
+- **Instagram:** anasayfadaki Instagram bölümü (yayındaki ilk 6 fotoğraf görünür).
+
+**Fotoğraf yüklemek:**
+
+1. **Fotoğraf seçin**'e basın; telefonunuzdan bir veya birkaç fotoğraf seçebilirsiniz.
+2. Her fotoğraf için **"ne görünüyor?"** kutusunu doldurun (ör. "Tıraştan sonra beyaz bir Maltese"). Bu açıklama görme engelli ziyaretçilere okunur ve zorunludur. Alt yazı isteğe bağlıdır; galeride kedi mi köpek mi olduğunu da seçebilirsiniz.
+3. **Fotoğrafı yükle**'ye basın. Fotoğraflar yüklenmeden önce küçültülür ve konum bilgisi silinir.
+
+Yeni fotoğraflar listenin en üstüne **gizli** olarak eklenir. Sitede görünmesi için kartın **Yayınla** düğmesine basın; kaldırmak için **Gizle**.
+
+**Diğer işlemler:**
+
+- **Yukarı / Aşağı:** kartın sitedeki sırasını değiştirir.
+- **Düzenle:** açıklamayı, alt yazıyı veya kedi/köpek bilgisini değiştirir. **DEMO — İşletme onayı gerekli** etiketli fotoğraflarda **Kaydet**'e basmak, fotoğrafı kontrol ettiğiniz anlamına gelir ve etiketi kaldırır.
+- **Fotoğrafları birleştir (Galeri):** aynı paylaşıma ait fotoğrafları "Birleştirmek için seç" ile işaretleyin, sonra **Önce / Sonra kartı yap** (tam iki fotoğraf; listede üstteki "Önce" olur) veya **Karusel yap** (2–20 fotoğraf) düğmesine basın. **Fotoğrafları ayır** kartı yeniden tek fotoğraflara böler.
+- **Sil:** **Evet, kalıcı olarak sil** ile fotoğraf siteden ve depodan silinir. Geri alınamaz.

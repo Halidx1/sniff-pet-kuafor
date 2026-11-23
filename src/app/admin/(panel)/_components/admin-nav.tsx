@@ -8,6 +8,7 @@ const SECTIONS = [
   { href: "/admin", label: "Panel" },
   { href: "/admin/isletme-bilgileri", label: "İşletme Bilgileri" },
   { href: "/admin/metinler", label: "Metinler" },
+  { href: "/admin/fotograflar", label: "Fotoğraflar" },
   { href: "/admin/hesap", label: "Hesap" },
 ];
 
