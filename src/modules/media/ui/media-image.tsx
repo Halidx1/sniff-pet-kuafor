@@ -1,3 +1,4 @@
+import { preconnect } from "react-dom";
 import { requiredEnv } from "@/shared/lib/env";
 import type { MediaItem } from "../data/media-repo";
 import { fallbackSrc, srcSet } from "../domain/image-urls";
@@ -13,6 +14,8 @@ type Props = {
 
 export function MediaImage({ image, sizes, priority = false, className = "" }: Props) {
   const base = requiredEnv("SUPABASE_URL");
+  // Images come from Supabase Storage, another origin: open that connection early.
+  preconnect(new URL(base).origin);
   return (
     // eslint-disable-next-line @next/next/no-img-element -- variants are already sized at upload (ADR-008); next/image would add an optimisation service
     <img

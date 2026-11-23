@@ -594,14 +594,14 @@ Found by the developer while reviewing the M2 deploy preview (PR #59). Status at
   - #68 — the map's licence info starts collapsed; a tap on the map, the pin or "Yol Tarifi Al" opens directions (Apple Maps on iOS, `geo:` on Android, the Google listing on desktop) (#67)
 - **Merged — #66, homepage story (#64, ADR-025):** the first CSS-only story (ADR-022) was rejected; redesigned with hand-drawn doodles (rough.js generator, dev-only), GSAP ScrollTrigger and Lenis. Pinned chapters: brush → snip → cat → happy. Reduced motion gets a gentle version (fades instead of motion; Windows "Animation effects" off triggers it); an "Animasyonu tam hızda oynat" button switches to the full version (restarts from the top, remembered on the device). The developer approved this version on 2026-11-12; merged on 2026-11-23.
 - **Next:**
-  - #66: paw trail (welcome text + "why us" in doodle paws, hero photo as a taped sticker), site-wide touches (paper grain, torn edges, hand-drawn heading underlines), Lighthouse ≥ 0.9 on `/`
+  - Done (closes #64): paw trail for the "why us" points, the hero photo as a taped print next to the welcome text, site-wide touches (paper grain, torn edges, pen underline on headings); GSAP and Lenis load on the first interaction (ADR-032): Lighthouse performance on `/` 0.61 → 0.97–0.99 locally
   - Gallery PR (ADR-031): the shop's Instagram photos replace the Unsplash demo photos (published, `is_demo`), grouped per post with `media.group_id` + `group_role` (additive migration): 9 Önce | Sonra cards and one carousel for the clothes post, symmetric grid; hero and About use shop photos too; `seed:media` deletes the retired stock rows and files
 - **Test:**
   - [x] The map shows one paw pin and no other businesses; two fingers pan it on a phone
   - [x] A made-up URL on the preview shows the 404 without a bar (Drawer off)
   - [x] Map taps open directions on phone and desktop
   - [x] Story: full version (normal motion), gentle version (reduced motion), button switch — approved on the preview
-  - [ ] Lighthouse ≥ 0.9 on `/` with the story and the map
+  - [x] Lighthouse ≥ 0.9 on `/` with the story and the map (0.97–0.99 locally; `/galeri` stays ~0.8 under Lighthouse's simulated slow network, see ADR-032)
 
 #### Homepage art via a free AI image API (proposed, ADR-028)
 

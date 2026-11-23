@@ -39,7 +39,13 @@ const TILE_SIZES = "(min-width: 1280px) 19rem, (min-width: 640px) 25vw, 50vw";
  * Kedi/Köpek filter and a native <dialog> lightbox (Escape closes, arrows browse
  * every photo, including each post's cover collage).
  */
-export function GalleryLightbox({ cards }: { cards: Card[] }) {
+export function GalleryLightbox({
+  cards,
+  priority = false,
+}: {
+  cards: Card[];
+  priority?: boolean;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
   const [index, setIndex] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -76,22 +82,27 @@ export function GalleryLightbox({ cards }: { cards: Card[] }) {
       )}
 
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-        {visibleCards.map((card) => (
-          <li key={card.id} className={card.kind === "single" ? "col-span-1" : "col-span-2"}>
-            {card.kind === "pair" && (
-              <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-2xl bg-beige">
-                <Tile photo={card.before} label="Önce" onOpen={open} />
-                <Tile photo={card.after} label="Sonra" onOpen={open} />
-              </div>
-            )}
-            {card.kind === "carousel" && <Carousel slides={card.slides} onOpen={open} />}
-            {card.kind === "single" && (
-              <div className="overflow-hidden rounded-2xl bg-beige">
-                <Tile photo={card.image} onOpen={open} />
-              </div>
-            )}
-          </li>
-        ))}
+        {visibleCards.map((card, cardIndex) => {
+          const eager = priority && cardIndex === 0;
+          return (
+            <li key={card.id} className={card.kind === "single" ? "col-span-1" : "col-span-2"}>
+              {card.kind === "pair" && (
+                <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-2xl bg-beige">
+                  <Tile photo={card.before} label="Önce" onOpen={open} eager={eager} />
+                  <Tile photo={card.after} label="Sonra" onOpen={open} eager={eager} />
+                </div>
+              )}
+              {card.kind === "carousel" && (
+                <Carousel slides={card.slides} onOpen={open} eager={eager} />
+              )}
+              {card.kind === "single" && (
+                <div className="overflow-hidden rounded-2xl bg-beige">
+                  <Tile photo={card.image} onOpen={open} eager={eager} />
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       <dialog
@@ -161,10 +172,13 @@ function Tile({
   photo,
   label,
   onOpen,
+  eager = false,
 }: {
   photo: GalleryPhoto;
   label?: string;
   onOpen: (photo: GalleryPhoto) => void;
+  /** Above the fold: load now, with high priority. */
+  eager?: boolean;
 }) {
   return (
     // The tag sits outside the button: the photo's alt text already says
@@ -184,7 +198,8 @@ function Tile({
           width={photo.width}
           height={photo.height}
           alt=""
-          loading="lazy"
+          loading={eager ? "eager" : "lazy"}
+          fetchPriority={eager ? "high" : "auto"}
           decoding="async"
           className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
@@ -205,9 +220,11 @@ function Tile({
 function Carousel({
   slides,
   onOpen,
+  eager = false,
 }: {
   slides: GalleryPhoto[];
   onOpen: (photo: GalleryPhoto) => void;
+  eager?: boolean;
 }) {
   const track = useRef<HTMLDivElement>(null);
   const scroll = (direction: 1 | -1) => {
@@ -227,9 +244,9 @@ function Carousel({
         ref={track}
         className="flex snap-x snap-mandatory gap-1 overflow-x-auto overscroll-x-contain rounded-2xl bg-beige [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {slides.map((photo) => (
+        {slides.map((photo, i) => (
           <div key={photo.id} className="w-[calc(50%-2px)] shrink-0 snap-start">
-            <Tile photo={photo} onOpen={onOpen} />
+            <Tile photo={photo} onOpen={onOpen} eager={eager && i < 2} />
           </div>
         ))}
       </div>

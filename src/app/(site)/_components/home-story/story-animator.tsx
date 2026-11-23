@@ -1,12 +1,8 @@
 "use client";
 
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { loadGsap, useFirstInteraction } from "../first-interaction";
 import { useMotionChoice } from "../motion-choice";
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
  * Scroll choreography for the homepage story (ADR-025). The markup is server-rendered
@@ -28,9 +24,19 @@ export function StoryAnimator({ children }: { children: React.ReactNode }) {
   // The visitor can ask for the full animation despite reduced motion (MotionToggle).
   const choice = useMotionChoice();
 
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
+  // GSAP is loaded and the timeline built on the first interaction (first-interaction.ts);
+  // until then the story shows its CSS starting picture.
+  const armed = useFirstInteraction();
+
+  useEffect(() => {
+    if (!armed) return;
+    let cancelled = false;
+    let revert = () => {};
+    void loadGsap().then(({ gsap }) => {
+      if (cancelled || !root.current) return;
+      // Scoped to the story, like useGSAP's `scope`: string selectors only match inside it.
+      const mm = gsap.matchMedia(root.current);
+      revert = () => mm.revert();
       mm.add(
         {
           // GSAP runs this only while at least one condition matches, so every
@@ -303,10 +309,13 @@ export function StoryAnimator({ children }: { children: React.ReactNode }) {
           tl.to({}, { duration: 0.6 }); // hold the final picture for a moment
         },
       );
-      return () => mm.revert();
-    },
-    { scope: root, dependencies: [choice], revertOnUpdate: true },
-  );
+    });
+    // Runs again from scratch when the visitor switches between gentle and full motion.
+    return () => {
+      cancelled = true;
+      revert();
+    };
+  }, [armed, choice]);
 
   return (
     <div ref={root} className="hs-root">
