@@ -1,7 +1,7 @@
 -- identity: is_admin() requires being listed AND a 2FA (aal2) session.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(6);
+select plan(10);
 
 insert into auth.users (id, email) values
   ('aaaaaaaa-0000-4000-8000-000000000001', 'admin@example.test'),
@@ -12,12 +12,14 @@ insert into private.admins (user_id, display_name) values ('aaaaaaaa-0000-4000-8
 select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}', true);
 set local role authenticated;
 select is(private.is_admin(), false, 'admin without 2FA (aal1) is not admin');
+select is(public.current_admin_name(), null, 'current_admin_name() is empty without 2FA');
 reset role;
 
 -- Admin with 2FA (aal2).
 select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-0000-4000-8000-000000000001","role":"authenticated","aal":"aal2"}', true);
 set local role authenticated;
 select is(private.is_admin(), true, 'admin with 2FA (aal2) is admin');
+select is(public.current_admin_name(), 'Test Admin', 'current_admin_name() returns the caller''s own name with 2FA');
 select throws_ok('select * from private.admins', '42501', null, 'even an admin cannot read private.admins through the API');
 reset role;
 
@@ -25,12 +27,14 @@ reset role;
 select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-0000-4000-8000-000000000002","role":"authenticated","aal":"aal2"}', true);
 set local role authenticated;
 select is(private.is_admin(), false, 'a signed-in user who is not listed is not admin');
+select is(public.current_admin_name(), null, 'current_admin_name() is empty for someone not listed');
 reset role;
 
 -- Visitors.
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 set local role anon;
 select throws_ok('select private.is_admin()', '42501', null, 'anon cannot call is_admin()');
+select throws_ok('select public.current_admin_name()', '42501', null, 'anon cannot call current_admin_name()');
 select throws_ok('select * from private.admins', '42501', null, 'anon cannot read private.admins');
 reset role;
 

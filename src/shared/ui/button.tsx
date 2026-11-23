@@ -29,3 +29,21 @@ export function ButtonLink({ href, variant = "primary", className = "", children
     </a>
   );
 }
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant };
+
+/** A real <button> with the same look (forms, actions). */
+export function Button({
+  variant = "primary",
+  className = "",
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type={type}
+      className={`${BASE} ${VARIANTS[variant]} disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      {...props}
+    />
+  );
+}

@@ -543,7 +543,7 @@ The owner is not technical and will mostly use a phone. The admin panel must be 
 - Cloudflare Turnstile protects the login and password-reset forms.
 - Admin session cookies are HttpOnly, Secure, SameSite=Lax and scoped to `/admin`. The browser never holds a Supabase client or token.
 - All `/admin` routes are protected on the server, not only hidden in the UI.
-- "Şifremi unuttum" and change-password flows.
+- "Şifremi unuttum" and change-password flows. The reset link alone isn't enough: the 2FA code is asked before the new-password page opens.
 - `/admin` is excluded from search engines.
 
 ### Sections

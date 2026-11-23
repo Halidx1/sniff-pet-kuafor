@@ -1,0 +1,40 @@
+<!-- Password reset (identity, M3). Variables are filled in by Supabase Auth.
+     The link goes to our own route, which checks the token and sets the session cookie
+     under /admin (PLAN §3). Paste the same HTML into each cloud project:
+     Authentication → Emails → Reset password. -->
+<div
+  style="
+    font-family: Arial, Helvetica, sans-serif;
+    color: #07152b;
+    max-width: 32rem;
+    line-height: 1.5;
+  "
+>
+  <h2 style="margin: 0 0 1rem">Şifre sıfırlama</h2>
+  <p>Merhaba,</p>
+  <p>
+    Sniff Pet Kuaför yönetim paneli için şifre sıfırlama talebi aldık. Yeni bir şifre belirlemek
+    için aşağıdaki bağlantıya tıklayın. Bağlantı 1 saat geçerlidir.
+  </p>
+  <p>
+    <a
+      href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery"
+      style="
+        display: inline-block;
+        background: #07152b;
+        color: #f5e1ce;
+        padding: 0.75rem 1.25rem;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: bold;
+      "
+      >Yeni şifre belirle</a
+    >
+  </p>
+  <p>
+    Bağlantıyı açtıktan sonra güvenliğiniz için doğrulama uygulamanızdaki 6 haneli kod da istenir.
+  </p>
+  <p style="color: #66625e; font-size: 0.875rem">
+    Bu talebi siz yapmadıysanız bu e-postayı yok sayabilirsiniz; şifreniz değişmez.
+  </p>
+</div>

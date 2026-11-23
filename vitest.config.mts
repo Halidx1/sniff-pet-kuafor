@@ -7,7 +7,11 @@ if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 export default defineConfig({
   resolve: {
-    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // The real package throws outside Next.js; tests run server code directly.
+      "server-only": fileURLToPath(new URL("./tests/stubs/empty.ts", import.meta.url)),
+    },
   },
   test: {
     environment: "node",

@@ -6,8 +6,8 @@ const isDev = process.env.NODE_ENV === "development";
 const indexable = process.env.SITE_INDEXABLE === "true";
 
 // Baseline CSP for the public site. Static/prerendered pages can't carry per-request nonces, so inline
-// scripts are allowed here; /admin gets a strict nonce-based CSP from proxy.ts in M3 (ADR-006).
-// Turnstile is added in M3.
+// scripts are allowed here; /admin gets its own strict nonce-based CSP from proxy.ts (ADR-006), so
+// this one is not sent there (two CSP headers would both be enforced).
 // Images come from our own Supabase project only (ADR-008/009). The map (ADR-020) fetches its
 // style, tiles and fonts from OpenFreeMap and runs MapLibre's worker from /vendor (same origin).
 const supabaseOrigin = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : "";
@@ -28,7 +28,6 @@ const csp = [
 ].join("; ");
 
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -52,7 +51,14 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Everything except /admin and /admin/… (proxy.ts sets the admin CSP).
+      {
+        source: "/:path((?!admin$|admin/).*)",
+        headers: [{ key: "Content-Security-Policy", value: csp }],
+      },
+    ];
   },
 };
 

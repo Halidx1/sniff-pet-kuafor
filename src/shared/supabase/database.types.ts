@@ -420,6 +420,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      current_admin_name: { Args: Record<PropertyKey, never>; Returns: string };
       health_check: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {

@@ -44,6 +44,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [030](#adr-030-customers-give-reminder-consent-through-an-online-form-confirmed-by-staff) | Reminder consent through an online form, confirmed by staff | Accepted |
 | [031](#adr-031-gallery-cards-per-instagram-post-with-the-shops-own-photos) | Gallery cards per Instagram post, with the shop's own photos | Accepted |
 | [032](#adr-032-scroll-effects-load-on-the-visitors-first-interaction) | Scroll effects load on the visitor's first interaction | Accepted |
+| [033](#adr-033-how-the-admin-sign-in-is-built-m3-identity) | How the admin sign-in is built (M3 identity) | Accepted |
 
 ---
 
@@ -902,3 +903,28 @@ The gate passed; no fallback is needed.
 - Homepage performance 0.97–0.99 locally; ~110 KB of GSAP left the first load.
 - The first scroll pays the setup cost once (a short pause on slow phones); the story starts from the top either way.
 - `/galeri` stays around 0.8 under Lighthouse's simulated slow network: its LCP is a photo from another origin, which the simulation queues behind the framework JavaScript every page loads; measured loads show it within ~70 ms. CI reports performance as a warning only.
+
+---
+
+## ADR-033: How the admin sign-in is built (M3 identity)
+
+- **Date:** 2026-11-23
+- **Status:** Accepted. Implements ADR-006.
+
+**Decision.**
+- **Sessions:** `@supabase/ssr` with the cookie options of ADR-006 (`HttpOnly`, `SameSite=Lax`, `Path=/admin`, `Secure` in production; browsers also accept `Secure` on `http://localhost`). `adminClient()` reads them in Server Components and Actions; `proxy.ts` refreshes and saves them.
+- **Strict CSP:** `proxy.ts` sets a per-request nonce (`script-src 'self' 'nonce-…' 'strict-dynamic'`, no inline scripts, `frame-ancestors 'none'`, Turnstile and Storage allowed). The public CSP in `next.config.ts` is not sent on `/admin`, because two CSP headers would both be enforced. Under Cache Components a nonce only reaches the scripts of a page rendered for that request, so the admin layout sets `instant = false` and calls `connection()`: admin pages are never prerendered.
+- **Routing:** `proxy.ts` decides the first step from the session (signed out → giriş; password only → 2FA setup or code; full → panel). Server Actions render their redirect target in the same request, so the proxy doesn't see it: `signIn` and `requireAdmin()` compute the next step themselves (`nextSignInStep`).
+- **The real gate:** `requireAdmin()` = a valid `aal2` session **and** `public.current_admin_name()` (a security-definer function over `private.admins`, applying `private.is_admin()`). RLS checks again.
+- **Password reset:** the email link goes to `/admin/auth/confirm` (token check, session cookie), then the 2FA code, then the new password. Turkish template in `supabase/templates/recovery.html`; the same text goes into each cloud project.
+- **Turnstile:** shown when `TURNSTILE_SITE_KEY` is set; Supabase checks the token (captcha enabled in the cloud projects only, so local and CI run without it).
+- **Tests:** a Vitest test finds every exported Server Action in `src/modules/*/actions.ts` and calls each without a session; only an explicit allowlist (the sign-in steps) may run. E2E creates a throwaway admin on the local Supabase (Auth admin API + `postgres` dev dependency for `private.admins`), computes TOTP codes like an authenticator app, and reads the reset email from local Mailpit.
+
+**Alternatives considered.**
+- *Hash-based CSP (experimental SRI):* keeps prerendering, but experimental; the admin doesn't need prerendering.
+- *Relying on proxy.ts alone for routing:* breaks after Server Actions (above).
+- *A Supabase client in the browser for MFA enrolment:* would need a browser-readable token; ADR-006 keeps tokens server-side.
+
+**Consequences.**
+- Admin pages render per request (fine for two admins).
+- E2E for the admin runs in the desktop project only (one shared test account) and needs Mailpit in CI.
