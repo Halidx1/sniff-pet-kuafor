@@ -197,8 +197,10 @@
 .hs-play .hs-dog .ink {
   animation: hs-draw 1.6s ease-out backwards;
 }
+/* No fade: the subtitle is the page's largest text (LCP), so it's visible from the
+   first paint and only slides up a little. */
 .hs-play .hs-sub {
-  animation: hs-fade 0.6s ease-out 0.7s backwards;
+  animation: hs-rise 0.6s ease-out 0.2s backwards;
 }
 .hs-play .hs-dog .paint {
   animation: hs-fade 0.7s ease-out 0.8s backwards;
@@ -216,6 +218,11 @@
   }
 }
 
+@keyframes hs-rise {
+  from {
+    translate: 0 0.75rem;
+  }
+}
 @keyframes hs-fade {
   from {
     opacity: 0;

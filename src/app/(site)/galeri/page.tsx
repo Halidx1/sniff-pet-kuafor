@@ -18,7 +18,7 @@ export default async function GalleryPage() {
       <PageHeader title="Galeri" />
       <Container className="py-14 sm:py-20">
         {images.length > 0 ? (
-          <Gallery images={images} />
+          <Gallery images={images} priority />
         ) : (
           <div className="max-w-2xl">
             <p className="text-lg leading-relaxed">

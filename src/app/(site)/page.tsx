@@ -7,9 +7,11 @@ import { ButtonLink } from "@/shared/ui/button";
 import { InstagramIcon } from "@/shared/ui/icons";
 import { Section, SectionHeading } from "@/shared/ui/section";
 import { HomeStory } from "./_components/home-story/home-story";
+import { PawTrail, type Reason } from "./_components/paw-trail/paw-trail";
+import { TapedPhoto } from "./_components/taped-photo";
 import { SERVICES_FALLBACK } from "./_components/fallbacks";
 
-const REASONS = [
+const REASONS: Reason[] = [
   {
     icon: Heart,
     title: "Özenli Bakım",
@@ -40,12 +42,13 @@ const STEPS = [
 ];
 
 export default async function HomePage() {
-  const [texts, profile, services, gallery, instagram] = await Promise.all([
+  const [texts, profile, services, gallery, instagram, [heroImage]] = await Promise.all([
     getSiteTexts(),
     getBusinessProfile(),
     getPublishedServices(),
     getPublishedMedia("gallery"),
     getPublishedMedia("instagram"),
+    getPublishedMedia("hero"),
   ]);
 
   return (
@@ -53,14 +56,17 @@ export default async function HomePage() {
       <HomeStory texts={texts} />
 
       <Section labelledBy="welcome-heading">
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
-          <h2
-            id="welcome-heading"
-            className="text-3xl font-extrabold tracking-tight text-balance sm:text-4xl"
-          >
-            Sniff Pet Kuaför&apos;e Hoş Geldiniz!
-          </h2>
-          <p className="max-w-[65ch] text-lg leading-relaxed">{texts.welcome_text}</p>
+        <div className="grid items-center gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-20">
+          <div>
+            <h2
+              id="welcome-heading"
+              className="pen-underline text-3xl font-extrabold tracking-tight text-balance sm:text-4xl"
+            >
+              Sniff Pet Kuaför&apos;e Hoş Geldiniz!
+            </h2>
+            <p className="mt-6 max-w-[60ch] text-lg leading-relaxed">{texts.welcome_text}</p>
+          </div>
+          {heroImage && <TapedPhoto image={heroImage} />}
         </div>
       </Section>
 
@@ -84,19 +90,7 @@ export default async function HomePage() {
 
       <Section labelledBy="reasons-heading">
         <SectionHeading id="reasons-heading" title="Minik Dostlarınız İçin Özenli Bakım" />
-        <ul className="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2">
-          {REASONS.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="flex gap-5">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-caramel text-navy">
-                <Icon className="size-6" aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-xl font-extrabold">{title}</h3>
-                <p className="mt-2 leading-relaxed">{text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <PawTrail reasons={REASONS} />
       </Section>
 
       <Section tone="navy" labelledBy="steps-heading">

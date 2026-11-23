@@ -43,6 +43,7 @@ Requirements live in [`SPEC.md`](SPEC.md); the delivery plan lives in [`PLAN.md`
 | [029](#adr-029-sync-the-shops-instagram-posts-with-the-official-api-as-drafts) | Sync the shop's Instagram posts with the official API, as drafts | Accepted (pending setup) |
 | [030](#adr-030-customers-give-reminder-consent-through-an-online-form-confirmed-by-staff) | Reminder consent through an online form, confirmed by staff | Accepted |
 | [031](#adr-031-gallery-cards-per-instagram-post-with-the-shops-own-photos) | Gallery cards per Instagram post, with the shop's own photos | Accepted |
+| [032](#adr-032-scroll-effects-load-on-the-visitors-first-interaction) | Scroll effects load on the visitor's first interaction | Accepted |
 
 ---
 
@@ -875,3 +876,29 @@ The gate passed; no fallback is needed.
 - About 4.5 MB of JPEGs in the repository (36 files); WebP variants are served from Storage as before.
 - Admin (M3) needs to group, re-order and tag photos; the Instagram sync (ADR-029) fills the same columns.
 - The owner still confirms the photos and the alt texts (#54).
+
+---
+
+## ADR-032: Scroll effects load on the visitor's first interaction
+
+- **Date:** 2026-11-23
+- **Status:** Accepted. Amends ADR-025.
+
+**Context.**
+- Lighthouse (mobile, throttled CPU) scored the homepage 0.61: about 930 ms of blocking time, mostly GSAP building the pinned story timeline right after load (one 660 ms task), and a 4.7 s LCP because the subtitle, the largest text, faded in after a delay.
+- The story's starting picture is plain CSS (ADR-025), so nothing needs GSAP until the visitor moves.
+
+**Decision.**
+- `first-interaction.ts` arms the scroll effects on the first `pointerdown`, `touchstart`, `wheel`, `keydown` or `scroll` (or at once when the page opens already scrolled). Only then are GSAP + ScrollTrigger and Lenis loaded with dynamic `import()` and the timeline built. `@gsap/react` is no longer needed (a plain `useEffect` with `gsap.matchMedia(scope)`).
+- The subtitle is visible from the first paint and only slides up.
+- `/galeri` loads its first card with `loading="eager"` + `fetchpriority="high"`; image components preconnect to the Storage origin.
+- The paw trail's step-in uses CSS scroll-driven animations (`animation-timeline: view()`), no JavaScript.
+
+**Alternatives considered.**
+- *Build the timeline in `requestIdleCallback`:* still a long task inside Lighthouse's window and on a busy phone.
+- *Drop the pinned story:* rejected; the developer approved it.
+
+**Consequences.**
+- Homepage performance 0.97–0.99 locally; ~110 KB of GSAP left the first load.
+- The first scroll pays the setup cost once (a short pause on slow phones); the story starts from the top either way.
+- `/galeri` stays around 0.8 under Lighthouse's simulated slow network: its LCP is a photo from another origin, which the simulation queues behind the framework JavaScript every page loads; measured loads show it within ~70 ms. CI reports performance as a warning only.

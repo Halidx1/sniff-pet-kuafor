@@ -1,6 +1,20 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { stubMapTiles } from "./map-stub";
+
+/**
+ * The story's GSAP timeline is built on the visitor's first interaction
+ * (first-interaction.ts). Simulate one, then wait until the stage is pinned.
+ */
+async function armStory(page: Page) {
+  // Repeat until it takes: an event before hydration has no listener yet.
+  await expect
+    .poll(async () => {
+      await page.evaluate(() => window.dispatchEvent(new Event("pointerdown")));
+      return page.locator(".pin-spacer").count();
+    })
+    .toBeGreaterThan(0);
+}
 
 test.beforeEach(({ page }) => stubMapTiles(page));
 
@@ -24,9 +38,11 @@ for (const { path, h1 } of PAGES) {
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(h1);
     // Let one-off page-load animations finish: half-faded text would count as low contrast.
+    // Scroll-driven ones (the paw trail) follow the scroll position and never "finish".
     await page.waitForFunction(() =>
       document
         .getAnimations()
+        .filter((anim) => anim.timeline instanceof DocumentTimeline)
         .filter((anim) => anim.effect?.getTiming().iterations !== Infinity)
         .every((anim) => anim.playState === "finished"),
     );
@@ -243,7 +259,7 @@ test("scrolling plays the story: the hero pins and the chapters change", async (
   // Halfway into the story: still pinned at the top, a caption is showing.
   // Wait for the story to set up its pin: scrolling earlier would make ScrollTrigger
   // keep the visitor's place and jump past the story.
-  await page.locator(".pin-spacer").waitFor({ state: "attached" });
+  await armStory(page);
   await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
   await expect.poll(() => pin.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(0);
   expect(startTop).toBeGreaterThan(0);
@@ -263,7 +279,7 @@ test.describe("with reduced motion", () => {
         .first()
         .evaluate((el) => el.getAnimations().some((anim) => anim.playState === "running"));
     await page.goto("/");
-    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    await armStory(page);
     // Reduced motion: the headline is simply there.
     expect(await wordAnimating()).toBe(false);
 
@@ -275,7 +291,7 @@ test.describe("with reduced motion", () => {
     await expect.poll(wordAnimating).toBe(true);
 
     // Full version: the dog's fur flies off (strands get a transform).
-    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    await armStory(page);
     await page.evaluate(() => window.scrollTo(0, innerHeight * 1.6));
     await expect
       .poll(() =>
@@ -298,6 +314,19 @@ test.describe("with reduced motion", () => {
     expect(await wordAnimating()).toBe(false);
   });
 
+  test("the why-us points stand in the paw trail, fully visible without motion", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const paws = page.locator(".paw-trail > li");
+    await expect(paws).toHaveCount(4);
+    for (const paw of await paws.all()) {
+      await paw.scrollIntoViewIfNeeded();
+      await expect(paw.getByRole("heading", { level: 3 })).toBeVisible();
+      expect(await paw.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+    }
+  });
+
   test("the story plays gently: it pins and reaches the cat, but nothing flies", async ({
     page,
   }) => {
@@ -305,7 +334,7 @@ test.describe("with reduced motion", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     // Wait for the story to set up its pin: scrolling earlier would make ScrollTrigger
     // keep the visitor's place and jump past the story.
-    await page.locator(".pin-spacer").waitFor({ state: "attached" });
+    await armStory(page);
     await page.evaluate(() => window.scrollTo(0, innerHeight * 2));
     const pin = page.locator(".hs-pin");
     await expect

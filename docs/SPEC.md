@@ -166,7 +166,7 @@ Avoid colors beyond these tokens. Check that all text/background combinations me
 
 Friendly and welcoming; professional and trustworthy; modern and slightly playful; premium but approachable; pet-oriented without looking childish; clean, with generous whitespace.
 
-Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, ADR-025), which has a gentle version for reduced motion. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
+Use rounded corners, subtle shadows, soft background transitions and organic shapes inspired by paws and pet silhouettes. Use small paw-print details as occasional accents, not everywhere. Avoid excessive animation (respect `prefers-reduced-motion`), except the one scroll-driven grooming story at the top of the homepage (§8, ADR-025), which has a gentle version for reduced motion. Hand-made touches carry the doodle style across the site: a caramel pen stroke under headings, a light paper grain, torn-paper edges on the cream and navy bands, and photo prints held by tape. Avoid visual clutter, generic pet-shop templates and overly colorful cartoon illustrations.
 
 Build a small, reusable component set once (Button, Card, SectionHeading, Badge, etc.) and use it everywhere.
 
@@ -234,6 +234,8 @@ After the story, a **paw trail**: the brand introduction and the four "why choos
 
 ### Brand introduction
 
+The welcome text sits next to the shop's hero photo, shown as a tilted photo print held by two strips of tape (issue #64).
+
 Heading: **"Sniff Pet Kuaför'e Hoş Geldiniz!"**
 
 Introduce the business as a cat and dog grooming destination in Gölbaşı, Ankara, in friendly and sincere Turkish. Do not invent history, years of experience, qualifications, certificates or awards.
@@ -247,6 +249,8 @@ Show cards for **published** services only (data from the database). Link: **"T�
 If no services are published yet, show the fallback text from section 9 instead of empty cards.
 
 ### Why choose us?
+
+Shown as a **paw trail** (issue #64): each point sits in a hand-drawn paw print; the paws zigzag down the page like footsteps (one column on phones, two staggered columns from tablet width) and step in as they scroll into view. With reduced motion they are simply there.
 
 Heading: **"Minik Dostlarınız İçin Özenli Bakım"**
 

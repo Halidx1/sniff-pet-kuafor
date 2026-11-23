@@ -61,11 +61,56 @@
     @apply mt-1;
   }
 
-  /* The paw pad from the brand artwork (PawShape), as a photo mask for the hero. */
-  .paw-pad {
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 112 88' preserveAspectRatio='none'%3E%3Cpath d='M56 0c-26 0-56 30-56 58 0 20 16 30 32 26 10-3 16-8 24-8s14 5 24 8c16 4 32-6 32-26 0-28-30-58-56-58z'/%3E%3C/svg%3E");
-    mask-size: 100% 100%;
-    mask-repeat: no-repeat;
+  /* ---- Hand-made touches (issue #64, ADR-025): paper, torn edges, pen underline, tape. */
+
+  /* Light paper grain on the plain and cream bands; a 160 px noise tile, painted once. */
+  .paper {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .03 0 0 0 0 .08 0 0 0 0 .17 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Torn-paper top and bottom edges in the band's own colour (--band). */
+  .torn {
+    position: relative;
+  }
+  .torn::before,
+  .torn::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: var(--band);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M0 12V6l7-3 6 4 7-5 8 4 6-2 7 4 8-5 7 3 7-5 8 4 7-2 8 4 7-5 8 4 7-2 7 3 5-2v7z'/%3E%3C/svg%3E")
+      repeat-x 0 0 / 120px 12px;
+    pointer-events: none;
+  }
+  .torn::before {
+    top: -11px;
+  }
+  .torn::after {
+    bottom: -11px;
+    scale: 1 -1;
+  }
+
+  /* A caramel pen stroke under section headings (two passes, like the doodles). */
+  .pen-underline::after {
+    content: "";
+    display: block;
+    width: min(11rem, 70%);
+    height: 0.8rem;
+    margin-top: 0.45rem;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 24' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23c98a4b' stroke-width='4' stroke-linecap='round'%3E%3Cpath d='M5 15C62 9 118 16 176 11s96 1 119-3'/%3E%3Cpath d='M9 17c55-5 113 0 170-4s88-1 112-4' opacity='.7'/%3E%3C/g%3E%3C/svg%3E")
+      no-repeat left / 100% 100%;
+  }
+
+  /* Translucent tape holding a photo print. */
+  .tape {
+    position: absolute;
+    width: 6.5rem;
+    height: 1.75rem;
+    background: rgb(201 138 75 / 0.55);
+    box-shadow: 0 1px 2px rgb(7 21 43 / 0.12);
   }
   .lightbox-btn {
     @apply inline-flex size-12 items-center justify-center rounded-full bg-cream text-navy hover:bg-white;
